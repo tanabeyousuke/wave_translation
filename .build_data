@@ -1,0 +1,10 @@
+section basicdata
+name:wavtran
+link:gfortran -o <name> <obj>
+end section basicdata
+
+
+section assemble
+f90:src/fortran:gfortran -c <src>
+c:src/c:gcc -c <src>
+end section assemble
