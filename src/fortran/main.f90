@@ -1,11 +1,12 @@
 program main
-  use iso_c_binding
-
   implicit none
   interface
-     subroutine test() bind(c)
-     end subroutine test
+     function newaudio() bind(C, NAME='newaudio')
+       use iso_c_binding
+       type(c_ptr)::newaudio
+       !pulseaudioのpa_simple_newに相当します。
+     end function newaudio
   end interface
-
-  call test
+  
+  
 end program main
