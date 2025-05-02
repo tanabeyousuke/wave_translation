@@ -1,6 +1,6 @@
 section basicdata
-name:wavtran
-link:gfortran -o <name> <obj>
+name:wt
+link:gfortran -o <name> <obj> -lpulse -lpulse-simple -lm
 end section basicdata
 
 
