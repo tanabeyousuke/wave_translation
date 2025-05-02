@@ -10,7 +10,7 @@
 # define STREAM_NAME "play"
 # define DATA_SIZE 1024
 
-pa_simple* newaudio(void){
+void newaudio(pa_simple* pa){
   int pa_errno, pa_result, read_bytes;
   
   pa_sample_spec ss;
@@ -18,11 +18,13 @@ pa_simple* newaudio(void){
   ss.rate = 48000;
   ss.channels = 1;
   
-  pa_simple* pa = pa_simple_new(NULL, APP_NAME, PA_STREAM_PLAYBACK, NULL, STREAM_NAME, &ss, NULL, NULL, &pa_errno);
+  pa = pa_simple_new(NULL, APP_NAME, PA_STREAM_PLAYBACK, NULL, STREAM_NAME, &ss, NULL, NULL, &pa_errno);
   if(pa == NULL){
     fprintf(stderr, "error: setup failed\n");
     exit(1);
   }
-  return pa;
 }
   
+void freeaudio(pa_simple* pa){
+  pa_simple_free(pa);
+}
