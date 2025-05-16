@@ -1,23 +1,30 @@
+
 program main
   use iso_c_binding
   implicit none
   interface
      function newaudio() bind(C, NAME='newaudio') 
        use iso_c_binding
-       integer(c_intptr_t)::newaudio
+       type(c_ptr) newaudio
        !pulseaudioのpa_simple_newに相当します。
      end function newaudio
      
      subroutine freeaudio(pa) bind(C, NAME='freeaudio')
        use iso_c_binding
-       integer(c_intptr_t)::pa
-       !pulseaudioのpa_simple_freeに相当するはずなんです..がね..
+       type(c_ptr) ,value::pa
+       !pulseaudioのpa_simple_freeに相当しました！やったね！
      end subroutine freeaudio
+
+     subroutine sound(pa,freq) bind(C, NAME='write_audio')
+       use iso_c_binding
+       type(c_ptr) ,value::pa
+       real freq
+     end subroutine sound
      
   end interface
   
-  integer(c_intptr_t) :: pa
+  type(c_ptr) pa
   pa = newaudio()
-  print *, pa
+  call sound(pa, 420.0)
   call freeaudio(pa)
 end program main
