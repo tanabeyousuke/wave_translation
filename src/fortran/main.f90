@@ -3,7 +3,7 @@ program main
   use iso_c_binding
   implicit none
   interface
-     function newaudio() bind(C, NAME='newaudio') 
+     function newaudio() bind(C, NAME='audio_init') 
        use iso_c_binding
        type(c_ptr) newaudio
        !pulseaudioのpa_simple_newに相当します。
@@ -18,13 +18,15 @@ program main
      subroutine sound(pa,freq) bind(C, NAME='write_audio')
        use iso_c_binding
        type(c_ptr) ,value::pa
-       real freq
+       real(c_double) freq
      end subroutine sound
      
   end interface
   
   type(c_ptr) pa
+  real(c_double) f
   pa = newaudio()
-  call sound(pa, 420.0)
+  f = 1000
+  call sound(pa, f)
   call freeaudio(pa)
 end program main
