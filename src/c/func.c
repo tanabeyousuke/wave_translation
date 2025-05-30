@@ -66,4 +66,5 @@ void write_audio(pa_simple *pa, double freq){
     printf("done\n");
 
     free(buf);
+
 }

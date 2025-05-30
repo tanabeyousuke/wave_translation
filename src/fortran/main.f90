@@ -1,4 +1,3 @@
-
 program main
   use iso_c_binding
   implicit none
@@ -20,6 +19,10 @@ program main
        type(c_ptr) ,value::pa
        real(c_double) freq
      end subroutine sound
+
+     !後々こ↑こ↓に書くであろう関数
+     !buffer(波形をreal(c_double)で保存するバッファを生成)
+     !write_to_server(波形バッファを変換してサーバーに渡す)
      
   end interface
   
