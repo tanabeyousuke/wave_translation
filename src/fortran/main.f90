@@ -14,22 +14,39 @@ program main
        !pulseaudioのpa_simple_freeに相当しました！やったね！
      end subroutine freeaudio
 
-     subroutine sound(pa,freq) bind(C, NAME='write_audio')
+     subroutine sound(pa,buffer) bind(C, NAME='write_audio')
        use iso_c_binding
        type(c_ptr) ,value::pa
-       real(c_double) freq
+       type(c_ptr) ,value::buffer
      end subroutine sound
 
+     function buffer(kata) bind(c, name='make_buffer')
+       use iso_c_binding
+       type(c_ptr) buffer
+       integer(c_int) kata
+     end function buffer
+     
      !後々こ↑こ↓に書くであろう関数
-     !buffer(波形をreal(c_double)で保存するバッファを生成)
      !write_to_server(波形バッファを変換してサーバーに渡す)
      
   end interface
   
-  type(c_ptr) pa
-  real(c_double) f
+  type(c_ptr) pa, p
+  real(c_double) t
+  real, pointer::buf(:)
+  integer i
+  
   pa = newaudio()
-  f = 1000
-  call sound(pa, f)
+
+  p = buffer(0)
+  call c_f_pointer(p, buf, shape=[48000])
+
+  do i = 0, 47999
+     t = i / 48000 * 1000
+     buf(i) = sin(t) * 0.8
+  end do
+  
+  call sound(pa, p)
+  
   call freeaudio(pa)
 end program main
