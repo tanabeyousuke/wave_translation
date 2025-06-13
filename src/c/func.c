@@ -43,7 +43,7 @@ void* make_buffer(int kata)
     }
   else
     {
-      size = sizeof(int16_t) * SAMPRATE;
+      size = 4 * SAMPRATE;
     }
   void* buf = malloc(size);
   return buf;
@@ -54,32 +54,36 @@ void freeaudio(pa_simple* pa){
   pa_simple_free(pa);
 }
 
-void write_audio(pa_simple *pa, double *buffer){
-    int i;
-    int16_t n;
-    double d;
-    uint8_t *buf;
-    buf = (uint8_t *)malloc(SAMPRATE * 2);
-    uint8_t *ptr = (uint8_t *)buf;
-   
-    for(i = 0; i < SAMPRATE; i++)
-      {
-	//d = sin(((double)i / SAMPRATE) * freq * PI * 2) * 0.8;
-	d = buffer[i];
-	n = (int16_t)round(d * 32767);
-	
-	//16bit LE
-	ptr[i * 2] = (uint8_t)n;
-	ptr[i * 2 + 1] = n >> 8;
-      }
+void freebuffer(void *p)
+{
+  free(p);
+}
 
-    printf("write..");
-    fflush(stdout);
 
-    pa_simple_write(pa, buf, SAMPRATE * 2, NULL);
-
-    printf("done\n");
-
-    free(buf);
-
+void write_audio(pa_simple *ps,double *buffer,uint8_t *buf)
+{
+  int i;
+  int16_t n;
+  double d;
+  uint8_t *ptr = (uint8_t *)buf;
+  
+  
+  for(i = 0; i < SAMPRATE; i++, ptr += 2)
+    {
+      d = sin(i * PI * 2 * (1000.0 / SAMPRATE)) * 0.8;
+      n = (int16_t)round(d * 32767);
+      
+      //16bit LE
+      ptr[0] = (uint8_t)n;
+      ptr[1] = n >> 8;
+    }
+  
+  
+  printf("write..");
+  fflush(stdout);
+  
+  pa_simple_write(ps, buf, SAMPRATE * 2, NULL);
+  
+  
+  printf("done\n");
 }
