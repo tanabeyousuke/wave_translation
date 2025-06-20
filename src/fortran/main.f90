@@ -50,15 +50,16 @@ program main
   call c_f_pointer(p, buf, shape=[48000])
 
   do i = 1, 48000
-     t = (i - 1) / 48000 * 1000.0
+     t = (i - 1) / 48000.0 * 1000.0
      buf(i) = sin(t) * 0.8
+     print *, i
   end do
 
   
-  call sound(pa, p, buf8)
+  ! call sound(pa, p, buf8)
   
-  call freeaudio(pa)
-  call freebuffer(p)
-  call freebuffer(buf8)
-  print *, "free"
+  ! call freeaudio(pa)
+  ! call freebuffer(p)
+  ! call freebuffer(buf8)
+  ! print *, "free"
 end program main

@@ -21,7 +21,7 @@ program main
 
   end interface
 
-  integer l
+  integer l, i
   integer(c_int) length
   type(c_ptr) p
   integer, pointer::array(:)
@@ -29,7 +29,11 @@ program main
   length = l
   p = yoyaku(length)
   CALL C_F_POINTER(p, array, SHAPE=[length])
-  array(1) = l
+
+  do i=1, 5 
+     array(i) = i
+  end do
+  
   call out(p, length)
   call kaihou(p)
 
