@@ -40,7 +40,7 @@ program main
   
   type(c_ptr) pa, p, buf8
   real(c_double) t
-  real, pointer::buf(:)
+  real(c_double), pointer::buf(:)
   integer i
   
   pa = newaudio()
@@ -53,13 +53,12 @@ program main
      t = (i - 1) / 48000 * 1000.0
      buf(i) = sin(t) * 0.8
   end do
+
   
   call sound(pa, p, buf8)
   
   call freeaudio(pa)
   call freebuffer(p)
   call freebuffer(buf8)
-    print *, "free"
-  
-
+  print *, "free"
 end program main

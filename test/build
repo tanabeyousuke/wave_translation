@@ -1,0 +1,6 @@
+#!/bin/bash
+
+gcc -c main.c -o c.o
+gfortran -c fortran.o -o fortran.o
+
+gfortran c.o fortran.o

@@ -70,7 +70,8 @@ void write_audio(pa_simple *ps,double *buffer,uint8_t *buf)
   
   for(i = 0; i < SAMPRATE; i++, ptr += 2)
     {
-      d = sin(i * PI * 2 * (1000.0 / SAMPRATE)) * 0.8;
+      /* d = sin(i * PI * 2 * (1000.0 / SAMPRATE)) * 0.8; */
+      d = buffer[i];
       n = (int16_t)round(d * 32767);
       
       //16bit LE
