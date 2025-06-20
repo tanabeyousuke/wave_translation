@@ -24,7 +24,7 @@ program main
      function buffer(kata) bind(c, name='make_buffer')
        use iso_c_binding
        type(c_ptr) buffer
-       integer(c_int) kata
+       integer(c_int), value::kata
      end function buffer
 
      subroutine freebuffer(pa) bind(C, NAME='freebuffer')
@@ -50,16 +50,15 @@ program main
   call c_f_pointer(p, buf, shape=[48000])
 
   do i = 1, 48000
-     t = (i - 1) / 48000.0 * 1000.0
+     t = (i - 1) * 3.1415927 * 2 * (1000.0 / 48000)
      buf(i) = sin(t) * 0.8
-     print *, i
   end do
 
   
-  ! call sound(pa, p, buf8)
+  call sound(pa, p, buf8)
   
-  ! call freeaudio(pa)
-  ! call freebuffer(p)
-  ! call freebuffer(buf8)
-  ! print *, "free"
+  call freeaudio(pa)
+  call freebuffer(p)
+  call freebuffer(buf8)
+  print *, "free"
 end program main

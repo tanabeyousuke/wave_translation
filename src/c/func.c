@@ -37,6 +37,7 @@ pa_simple* audio_init(){
 void* make_buffer(int kata)
 {
   int size;
+  printf("kata = %d/n", kata);
   if(kata == 0)
     {
       size = sizeof(double) * SAMPRATE;
@@ -46,6 +47,7 @@ void* make_buffer(int kata)
       size = 4 * SAMPRATE;
     }
   void* buf = malloc(size);
+  printf("%d byte allocated\n");
   return buf;
 }
 
@@ -77,6 +79,7 @@ void write_audio(pa_simple *ps,double *buffer,uint8_t *buf)
       //16bit LE
       ptr[0] = (uint8_t)n;
       ptr[1] = n >> 8;
+      
     }
   
   
@@ -85,6 +88,33 @@ void write_audio(pa_simple *ps,double *buffer,uint8_t *buf)
   
   pa_simple_write(ps, buf, SAMPRATE * 2, NULL);
   
+  
+  printf("done\n");
+}
+
+void write_to_server(pa simple *ps,double *buffer, uint8_t *buf)_
+{
+  int i;
+  int16_t n;
+  double d;
+  uint8_t *ptr = (uint8_t *)buf;
+
+  for(i = 0; i< SAMPRATE; i++, ptr += 2)
+    {
+      d = buffer[i];
+      n = (int16_t)round(d * 32767);
+      
+      //16bit LE
+      ptr[0] = (uint8_t)n;
+      ptr[1] = n >> 8;
+      
+    }
+  
+  
+  printf("write..");
+  fflush(stdout);
+  
+  pa_simple_write(ps, buf, SAMPRATE * 2, NULL);
   
   printf("done\n");
 }
