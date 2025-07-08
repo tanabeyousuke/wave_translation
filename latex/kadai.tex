@@ -1,32 +1,89 @@
-\documentclass{article}
+\documentclass[dvipdfmx]{article}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[top=25truemm,bottom=20truemm,left=20truemm,right=20truemm]{geometry}
-\usepackage[dvipdfmx]{graphicx}
 \usepackage{plext} % 日本語の各種設定
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
 \begin{document}
-
 \section*{課題研究一学期成果報告書}
 今年度の課題研究ではFortranとCを使ってシンセサイザーを作り、演奏することを目標とした。\par
 Fortranだけでは音声出力のライブラリが無いので、波形はFortranで生成・加工してCに送り、C側のPulseAudioを利用して音声出力を行う構造を採用した。大まかなフローチャートは以下の通り。\par
-\includegraphics[width=175mm]{chart.png}
-現在は、シンプルAPIを利用して一秒間正弦波を出力することに成功している。\par
-今後の目標は
-\begin{enumerate}
-\item 非同期APIを使い、実用的なものにする
-\item オシレータの種類を増やす
-\item フィルタ、LFOを実装する
-\item テキストファイルで演奏できるようにする $\leftarrow$ とても重要
-\item raspberry pi pico、スピーカー、ゴムホースでトークボックスを作る
-\item 最終目標として、完成したものを使って君が代を演奏する
-\end{enumerate}
+\begin{tikzpicture}
+  \draw[dashed](7, 0)--(7, -10);
+  \node at (3, 0) {C側};
+  \node at (11, 0) {Fortran側};
+  
+  \draw(0, -2)rectangle(6, -3);
+  \node at (3, -2.5) {音声サーバ、波形バッファの準備};
 
-%% \subsection*{テーマ}
-%% FortranとCを利用したシンセサイザー
-%% \subsection*{成果}
-%% \begin{enumerate}
-%% \item PulseAudioシンプルAPIの利用
-%% \item 一秒間の正弦波を音声出力
-%% \end{enumerate}
-%% \subsection*{今後の目標}
+  \draw[->] (3, -3)--(3, -4)--(11, -4)--(11, -5);
+
+  \draw(8, -5)rectangle(14, -6);
+  \node at (11, -5.5) {波形バッファに音の波形を書き込む};
+
+  \draw[->] (11, -6)--(11, -7)--(3, -7)--(3, -8);
+
+  \draw(0, -8)rectangle(6, -9);
+  \node at (3, -8.5) {波形バッファを音声として出力};
+\end{tikzpicture}
+
+現在は、シンプルAPIを利用して一秒間正弦波を出力することに成功している。\par
+
+\subsection*{今後の目標}
+\subsubsection*{非同期APIを使い、実用的なものにする}
+シンプルAPIはあくまで「シンプルなコードで音を出す」のみに限定しており、波形を読み込む$\to$再生しか出来ない。\par
+波形の生成に時間がかかる場合音が途切れてしまうので、それを防ぐためにより柔軟な非同期APIを利用する。
+\subsubsection*{オシレータ、フィルタ等の実装}
+減算方式シンセサイザー(箪笥など)の基本的なパーツは次の通り。
+\begin{enumerate}
+\item オシレータ
+\item フィルタ
+\item エンベロープ
+\item LFO
+\end{enumerate}
+これらが次の図のように繋がり、音波を生成する。\par
+
+\begin{tikzpicture}
+  \draw(0, 0)rectangle(2, 0.5);
+  \node at (1, 0.25) {オシレータ};
+  \node at (1, 0.75) {元になる波形を生成};
+
+  \draw[->] (2, 0.25)--(3, 0.25);
+
+  \draw(3, 0)rectangle(5, 0.5);
+  \node at (4, 0.25) {フィルタ};
+  \node at (4, 0.75) {音色を変化させる};
+
+  \draw[->] (5, 0.25)--(6, 0.25);
+
+  \draw(6, 0)rectangle(10, 0.5);
+  \node at (8, 0.25) {LFO, エンベロープ};
+  \node at (8, 0.75) {音に強弱をつける};
+  
+  \draw[->] (10, 0.25)--(11, 0.25);
+
+  \draw(11, 0)rectangle(13, 0.5);
+  \node at (12, 0.25) {アンプ};
+  \node at (12, 0.75) {音量を調節};
+\end{tikzpicture}
+
+\subsubsection*{テキストファイルで演奏できるようにする}
+とても重要。アセンブリ言語風のテキストで演奏させる。\par
+以下はド、レ、ミの3音を低い方から順に出すテキスト。
+
+\begin{verbatim}
+  .globl main
+main:
+  snd c 4
+  snd d 4
+  snd e 4
+\end{verbatim}
+
+\subsubsection*{トークボックスの実装}
+トークボックスとは、スピーカーの音をゴムホースを通して口内に響かせ、口の形を変えることで音色を変化させる楽器。ヴォコーダーと倍音変化が似ている。\par
+
+\subsubsection*{演奏}
+最終目標として、YMOの「Technopolis」を演奏する。\par
+
 \end{document}
