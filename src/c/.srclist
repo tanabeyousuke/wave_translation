@@ -1,2 +1,1 @@
-client/main.c
-speaker/main.c
+client/memory_writer.c

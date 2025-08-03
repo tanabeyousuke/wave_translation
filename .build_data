@@ -5,6 +5,6 @@ end section basicdata
 
 
 section assemble
-f90:src/fortran:gfortran -c <src>
-c:src/c:gcc -c <src>
+f90:src/fortran:gfortran -c <src> -o <obj>
+c:src/c:gcc -c <src> -o <obj>
 end section assemble
