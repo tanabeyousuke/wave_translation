@@ -1,6 +1,0 @@
-#!/bin/bash
-
-gcc -c main.c -o c.o
-gfortran -c main.f90 -o fortran.o
-
-gfortran fortran.o c.o

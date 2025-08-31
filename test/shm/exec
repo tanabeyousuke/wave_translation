@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+server/a.out &
+client/a.out

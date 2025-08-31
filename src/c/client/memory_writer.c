@@ -1,63 +1,83 @@
 #include "include.h"
-#define SAMP 48000
 
-typedef struct
+void* share_open(shm_meta* metadata, size_t size, const char* name, const char* sem_name)
 {
-  bool flag;
-  bool exit;
-  double wave[SAMP];
-}shared_wave;
-
-typedef struct
-{
-  int shm_fd;
-  size_t memory_size;
-  void* shm_addr;
-}shm_data;
-
-shm_data* memory_open(void)
-{
-  shm_data* shm = malloc(sizeof(shm_data));
-
-  const char *shm_name = "/wave_translation's memory";
-  shm->shm_fd = shm_open(shm_name, O_RDWR, 0);
-  if(shm->shm_fd == -1)
+  metadata->name = name;
+  
+  int fd = shm_open(name, O_CREAT | O_RDWR, 0666);
+  if(fd == -1)
     {
-      perror("shm_open");
+      exit(1);
+    }
+  metadata->fd = fd;
+  
+  metadata->mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if(metadata->mem == MAP_FAILED)
+    {
+      close(fd);
       exit(1);
     }
 
-  shm->memory_size = sizeof(shared_wave);
-  shm->shm_addr = mmap(NULL, shm->memory_size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shm_fd, 0);
-  if(shm->shm_addr == MAP_FAILED)
+  metadata->sem = sem_open(sem_name, 0);
+  if(metadata->sem == SEM_FAILED)
     {
-      perror("mmap");
-      close(shm->shm_fd);
-      exit(EXIT_FAILURE);
+      perror("semaphore");
+      munmap(metadata->mem, metadata->size);
+      close(metadata->fd);
+      exit(1);
     }
+  metadata->sem_name = sem_name;
 
-  return shm;
+  return metadata->mem; 
 }
 
-void* shm_address(shm_data* shm)
+void* share_login(void)
 {
-  return shm->shm_addr;
+  shm_meta* metadata = malloc(sizeof(shm_meta));
+  size_t size = sizeof(share_memory);
+  const char *name = "/wt_share_memory";
+  const char *sem_name = "/wt_semaphore";
+
+  share_open(metadata, size, name, sem_name);
+  return metadata;
 }
 
-void memory_close(shm_data* shm)
+void share_close(shm_meta* metadata)
 {
-  shared_wave *a = (shared_wave *)shm->shm_addr;
-  a->exit = true;
+  share_memory* mem = metadata->mem;
 
-  if(munmap(shm->shm_addr, shm->memory_size) == -1)
+  sem_wait(metadata->sem);
+  for(int i = 0; i < SAMP; i++)
     {
-      perror("munmap");
+      mem->wave[i] = 0;
     }
+  mem->exit = true;
+  sem_post(metadata->sem);
+
+  munmap(metadata->mem, metadata->size);
+  close(metadata->fd);
+  sem_close(metadata->sem);
+  free(metadata);
+}
+
+void memory_write(shm_meta* metadata, double* buffer)
+{
+  share_memory* memory = (share_memory *)metadata->mem;
+  float* wave = memory->wave;
+
+  sem_wait(metadata->sem);
   
-  if(close(shm->shm_fd) == -1)
+  for(int i = 0; i < SAMP; i++)
     {
-      perror("close");
+      wave[i] = (float)buffer[i];
     }
 
-  free(shm);
+  sem_post(metadata->sem);
 }
+
+void* buffer_malloc(void)
+{
+  double* buffer = malloc(sizeof(double) * SAMP);
+  return buffer;
+}
+

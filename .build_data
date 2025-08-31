@@ -1,6 +1,6 @@
 section basicdata
 name:wt
-link:gfortran -o <name> <obj> -lpulse -lpulse-simple -lm
+link:gfortran -o <name> <obj> -lpulse -lpulse-simple -lm ; ./speaker.sh
 end section basicdata
 
 

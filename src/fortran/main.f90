@@ -3,29 +3,57 @@ program c_interface
   implicit none
 
   interface
-     function memory_open() bind(c, name='memory_open')
+     function login() bind(c, name="share_login") !共有メモリにログインします。
        use iso_c_binding
-       type(c_ptr) memory_open
-     end function memory_open
-
-     function shm_address(shm) bind(c, name='shm_address')
-       use iso_c_binding
-       type(c_ptr) memory_open
-       type(c_ptr),value::shm
-     end function shm_address
+       type(c_ptr) login
+     end function login
      
-     subroutine memory_close(shm) bind(c, name='memory_close')  
+     subroutine logout(metadata) bind(c, name="share_close") !共有メモリからログアウトします。
        use iso_c_binding
-       type(c_ptr), value::shm
-     end subroutine memory_close
+       type(c_ptr),value::metadata
+     end subroutine logout
+     
+     function buffer_allocate() bind(c, name="buffer_malloc") !real(c_double)型配列の予約
+       use iso_c_binding
+       type(c_ptr) buffer_allocate
+     end function buffer_allocate
+     
+     subroutine buffer_free(p) bind(c, name="free")
+       use iso_c_binding
+       type(c_ptr),value::p
+     end subroutine buffer_free
+
+     ! subroutine usleep(time) bind(c, name="usleep")
+     !   use iso_c_binding
+     !   integer(c_int),value::time
+     ! end subroutine usleep
+     
+     subroutine memory_write(metadata, buffer) bind(c, name="memory_write") !real(c_double)型の配列を送ってもらう
+       use iso_c_binding
+       type(c_ptr),value::metadata,buffer
+     end subroutine memory_write
 
   end interface
   
-  type(c_ptr) shm_data
-  shm_data = memory_open()
+  integer s1
+  real,parameter::pi = 3.1415927
+  real,parameter::samp = 48000.0
 
-  call memory_close(shm_data);
+  type(c_ptr) metadata, buffer_p
+  real(c_double),pointer::buffer(:)
   
+
+  metadata = login()
+
+  buffer_p = buffer_allocate()
+  call c_f_pointer(buffer_p, buffer, SHAPE=[48000])
+
+  do s1=1, 48000
+     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp))
+  end do
+  call memory_write(metadata, buffer_p)
+  
+  call buffer_free(buffer_p)
+  call logout(metadata)
 end program c_interface
 
-     
