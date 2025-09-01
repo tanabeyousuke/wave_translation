@@ -44,12 +44,21 @@ program c_interface
   
 
   metadata = login()
-
   buffer_p = buffer_allocate()
   call c_f_pointer(buffer_p, buffer, SHAPE=[48000])
 
   do s1=1, 48000
-     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp))
+     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp)) * ((48000 - s1) / 48000.0)
+  end do
+  call memory_write(metadata, buffer_p)
+
+  do s1=1, 48000
+     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp)) * ((48000 - s1) / 48000.0)
+  end do
+  call memory_write(metadata, buffer_p)
+
+  do s1=1, 48000
+     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp)) * ((48000 - s1) / 48000.0)
   end do
   call memory_write(metadata, buffer_p)
   

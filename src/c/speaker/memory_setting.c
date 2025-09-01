@@ -27,7 +27,7 @@ void* share_setting(shm_meta* metadata, size_t size, const char* name, const cha
       exit(1);
     }
 
-  metadata->sem = sem_open(sem_name, O_CREAT, 0644, 1);
+  metadata->sem = sem_open(sem_name, O_CREAT, 0644, 0);
   if(metadata->sem == SEM_FAILED)
     {
       perror("semaphore");

@@ -27,6 +27,7 @@ void* share_open(shm_meta* metadata, size_t size, const char* name, const char* 
       exit(1);
     }
   metadata->sem_name = sem_name;
+  sem_post(metadata->sem);
 
   return metadata->mem; 
 }
@@ -70,6 +71,7 @@ void memory_write(shm_meta* metadata, double* buffer)
   for(int i = 0; i < SAMP; i++)
     {
       wave[i] = (float)buffer[i];
+      printf("%f\n", wave[i]);
     }
 
   sem_post(metadata->sem);
