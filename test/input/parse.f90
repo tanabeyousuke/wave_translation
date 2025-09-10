@@ -8,9 +8,9 @@ contains
 
     pos = index(mnemonic, ' ')
     if(pos == 0)then
-       print *, "control", mnemonic
+       print *, "control", " ", mnemonic
     else
-       print *, mnemonic(0:pos), "(", mnemonic(pos + 1:len(mnemonic)), ")"
+       print *, mnemonic(1:pos), "(", mnemonic(pos + 1:len(mnemonic)), ")"
     end if
   end subroutine opcode_parse
 
