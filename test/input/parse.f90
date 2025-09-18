@@ -42,11 +42,11 @@ contains
        num = num * (-1)
        num_reg = num
     else
-       read(op, *)num
+       read(op, *) num
        num_reg = num
     end if
   end function num_reg
-    
+  
   subroutine synth_setting(unit_num, set)
     integer, intent(inout)::unit_num
     type(setting),intent(out)::set
@@ -57,9 +57,11 @@ contains
     integer i, ro, rgx(5)
     logical lrgx(5)
 
+    type(osc)::osc_d
+
+
     set%oscillator%num = 0
     set%filter%num = 0
-    allocate(set%filter%list(1,3))
     set%env_num = 0
     set%lfo_num = 0
 
@@ -89,31 +91,36 @@ contains
              exit
           end if
        end do
-       
+
+       print *, line(ophead:optail)
        operate = line(ophead:optail)
        select case(trim(operate))
        case("osc")
           rgx(1) = set%oscillator%num + 1
           set%oscillator%num = rgx(1)
           if (allocated(set%oscillator%list)) then
+
              allocate(set%oscillator%list(rgx(1), 2), source=set%oscillator%list)
           else
              allocate(set%oscillator%list(rgx(1), 2))
           end if
-
-          print *, "allocate"
-
-          do i = optail, scpos
-             if(line(i:i) /= ' ') then
+          
+          do i = optail + 1, scpos
+             if(line(i:i) /= ' ' .and. (lrgx(2) .eqv. .false.)) then
                 ophead = i
+                exit
              end if
-             
+          end do
+          
+          do i = ophead, scpos
              lrgx(1) = line(i:i) == ' ' .or. line(i:i) == ';'
-             if(ophead < i .and. lrgx(1)) then
-                optail = i
+             if( lrgx(1)) then
+                optail = i - 1
+                exit
              end if
           end do
 
+          print *, line(ophead:optail)
           operate = trim(line(ophead:optail))
           select case(operate)
           case("sin")
@@ -128,24 +135,34 @@ contains
           
           set%oscillator%list(rgx(1),1) = rgx(2)
 
-          do i = optail, scpos
-             if(line(i:i) /= ' ') then
+          do i = optail + 1, scpos
+             if(line(i:i) /= ' ' .and. (lrgx(2) .eqv. .false.)) then
                 ophead = i
-             end if
-             
-             lrgx(1) = line(i:i) == ' ' .or. line(i:i) == ';'
-             if(ophead < i .and. lrgx(1)) then
-                optail = i
+                exit
              end if
           end do
           
+          do i = ophead, scpos
+             lrgx(1) = line(i:i) == ' ' .or. line(i:i) == ';'
+             if( lrgx(1)) then
+                optail = i - 1
+                exit
+             end if
+          end do
+
+          print *, line(ophead:optail)
           operate = trim(line(ophead:optail))
           set%oscillator%list(rgx(1),2) = num_reg(operate)
+
        case("flt")
           print *, "flt"
           rgx(1) = set%filter%num + 1
           set%filter%num = rgx(1)
-          allocate(set%filter%list(rgx(1),3), source=set%filter%list)
+          if (allocated(set%oscillator%list)) then
+             allocate(set%oscillator%list(rgx(1), 2), source=set%oscillator%list)
+          else
+             allocate(set%oscillator%list(rgx(1), 2))
+          end if
 
           do i = optail, scpos
              if(line(i:i) /= ' ') then
