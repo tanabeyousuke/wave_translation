@@ -1,14 +1,16 @@
 module parse !パーサです。シンセサイザの設定や演奏の実行などを処理します。
   implicit none
      
-  type::osc
-     real,allocatable::list(:,:)
-     real pch
-     integer num
-  end type osc
+  type::oscillator
+     integer,allocatable::f(:)!波形
+     real,allocatable::g(:)!オシレータのゲイン
+     integer n
+  end type oscillator
  
   type::flt
-     real, allocatable::list(:,:)
+     integer, allocatable::t(:)!フィルタの種類
+     real, allocatable::f(:)!カットオフ周波数
+     real, allocatable::r(:)!レゾナンス
      integer num
   end type flt
   
@@ -23,8 +25,8 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   end type lfo
   
   type::setting
-     type(osc)::oscillator
-     type(flt)::filter
+     type(oscillator) osc
+     type(flt) filter
      type(env), allocatable::envelope(:)
      type(lfo), allocatable::lfo(:)
      integer env_num
@@ -47,17 +49,33 @@ contains
     end if
   end function num_reg
   
-  subroutine reallocate_real_2d(list, new_x, new_y)
-    real, allocatable, intent(inout)::list(:, :)
-    integer new_x, new_y
+  subroutine reallocate_real(list, new_size)
+    real, allocatable::list(:)
+    integer new_size
 
-    real, allocatable::buffer(:, :)
-
-    allocate(buffer(new_x, new_y), mold=list)
+    real, allocatable::buffer(:)
+    
+    allocate(buffer(new_size))
+    buffer = list(1:)
+    deallocate(list)
 
     list = buffer
     deallocate(buffer)
-  end subroutine reallocate_real_2d
+  end subroutine reallocate_real
+
+  subroutine reallocate_integer(list, new_size)
+    integer, allocatable::list(:)
+    integer new_size
+
+    integer, allocatable::buffer(:)
+    
+    allocate(buffer(new_size))
+    buffer = list(1:)
+    deallocate(list)
+
+    list = buffer
+    deallocate(buffer)
+  end subroutine reallocate_real
 
   subroutine reallocate_env(list, new_size)
     type(env), allocatable, intent(inout)::list(:)
@@ -84,8 +102,8 @@ contains
   end subroutine reallocate_lfo
  
   subroutine synth_setting(unit_num, set)
-    integer, intent(inout)::unit_num
-    type(setting),intent(out)::set
+    integer unit_num
+    type(setting) set
 
     character(len=80) line
     character(len=5) operate
@@ -134,9 +152,9 @@ contains
           rgx(1) = set%oscillator%num + 1
           set%oscillator%num = rgx(1)
           if (allocated(set%oscillator%list)) then
-             call reallocate_real_2d(set%oscillator%list, rgx(1), 2)
+             call reallocate_real_2d(set%oscillator%list, 2, rgx(1))
           else
-             allocate(set%oscillator%list(rgx(1), 2))
+             allocate(set%oscillator%list(2, rgx(1)))
           end if
           
           do i = optail + 1, scpos
@@ -166,7 +184,7 @@ contains
              rgx(2) = 4
           end select
           
-          set%oscillator%list(rgx(1),1) = rgx(2)
+          set%oscillator%list(2, rgx(1)) = rgx(2)
 
           do i = optail + 1, scpos
              if(line(i:i) /= ' ' .and. (lrgx(2) .eqv. .false.)) then
@@ -184,7 +202,8 @@ contains
           end do
 
           operate = trim(line(ophead:optail))
-          set%oscillator%list(rgx(1),2) = num_reg(operate)
+          set%oscillator%list(2, rgx(1)) = num_reg(operate)
+          print *, rgx(1)
 
        case("flt")
           rgx(1) = set%filter%num + 1
@@ -293,7 +312,7 @@ contains
              rgx(2) = 2
           case("sus")
              rgx(2) = 3
-          case("sus")
+          case("rel")
              rgx(2) = 4
           case("out")
              rgx(2) = 5
@@ -328,7 +347,7 @@ contains
           if (allocated(set%lfo)) then
              call reallocate_lfo(set%lfo, rgx(1))
           else
-             allocate(set%lfo(rgx(1))
+             allocate(set%lfo(rgx(1)))
           end if
 
           do i = optail + 1, scpos
@@ -361,11 +380,9 @@ contains
              rgx(2) = 5
           end select
           
-          set%lfo(rgx(1))%lfo_unit(1)
-          
+          set%lfo(rgx(1))%lfo_unit(1) = rgx(2)
 
        end select
-          
     end do
   end subroutine synth_setting
 
@@ -393,6 +410,9 @@ contains
        
     end do
     call synth_setting(unit_num, set)
+    print *, set%oscillator%list(1, 1)
+    print *, set%oscillator%list(1, 2)
+
     close(unit_num)
   end subroutine execute
 
