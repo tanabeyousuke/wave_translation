@@ -1,1 +1,4 @@
 main.f90
+sound_generate.f90
+osc.f90
+env.f90
