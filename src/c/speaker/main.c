@@ -25,6 +25,7 @@ int main(void)
       for(int i = 0; i < 48000; i++)
 	{
 	  wave_output[i] = share_data->wave[i];
+	  printf("%f\n", wave_output[i]);
 	}
       sem_post(share_meta.sem);
 

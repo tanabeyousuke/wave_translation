@@ -1,0 +1,6 @@
+#!/bin/bash
+
+gfortran -c env.f90
+gfortran main.f90 env.f90
+
+rm env.mod env.o

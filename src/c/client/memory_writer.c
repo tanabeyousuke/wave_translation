@@ -71,7 +71,6 @@ void memory_write(shm_meta* metadata, double* buffer)
   for(int i = 0; i < SAMP; i++)
     {
       wave[i] = (float)buffer[i];
-      printf("%f\n", wave[i]);
     }
 
   sem_post(metadata->sem);

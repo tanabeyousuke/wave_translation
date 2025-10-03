@@ -1,5 +1,6 @@
 program c_interface
   use iso_c_binding
+  use sound_generate
   implicit none
 
   interface
@@ -41,25 +42,20 @@ program c_interface
 
   type(c_ptr) metadata, buffer_p
   real(c_double),pointer::buffer(:)
+  type(env_data) envelope
   
 
   metadata = login()
   buffer_p = buffer_allocate()
   call c_f_pointer(buffer_p, buffer, SHAPE=[48000])
 
-  do s1=1, 48000
-     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp)) * ((48000 - s1) / 48000.0)
-  end do
-  call memory_write(metadata, buffer_p)
+  call write_wave(buffer, 1, envelope, 24000, 466.16) 
 
-  do s1=1, 48000
-     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp)) * ((48000 - s1) / 48000.0)
-  end do
-  call memory_write(metadata, buffer_p)
+  envelope%atk = 1000
+  envelope%dec = 4000
+  envelope%sus = 30
+  envelope%rel = 1000
 
-  do s1=1, 48000
-     buffer(s1) = sin(2 * pi * 1000 * (s1 / samp)) * ((48000 - s1) / 48000.0)
-  end do
   call memory_write(metadata, buffer_p)
   
   call buffer_free(buffer_p)
