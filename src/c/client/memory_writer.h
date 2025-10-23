@@ -19,7 +19,6 @@ typedef struct {
 //c側で呼び出す奴ら
 void* share_open(shm_meta* metadata, size_t size, const char* name, const char* sem_name);
 
-
 //fortran側で呼び出す奴ら
 void* share_login(void);
 void share_close(shm_meta* metadata);

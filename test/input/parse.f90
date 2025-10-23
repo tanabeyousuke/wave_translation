@@ -34,7 +34,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   end type setting
   
 contains
-  function num_reg(op)
+  function num_reg(op)!レジスタ番号を実数に直します。
     character(*), intent(in)::op
     real num
     real num_reg
@@ -49,7 +49,7 @@ contains
     end if
   end function num_reg
 
-  subroutine get_token(line, head, tail, scpos)
+  subroutine get_token(line, head, tail, scpos) !スペースで囲まれた部分の先端と後端を取り出します。実際の使い方は下に
     character(len=80),intent(in)::line
     integer,intent(in)::scpos
     integer,intent(inout)::head, tail

@@ -84,11 +84,11 @@ int main(void)
   usleep(100);
 
   sem_wait(metadata.sem);
-
   printf("%s\n", data->bun);
+  sem_post(metadata.sem);
 
   share_close(&metadata);
   
   return 0;
 }
-  
+

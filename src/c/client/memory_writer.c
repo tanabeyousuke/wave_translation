@@ -7,6 +7,7 @@ void* share_open(shm_meta* metadata, size_t size, const char* name, const char* 
   int fd = shm_open(name, O_CREAT | O_RDWR, 0666);
   if(fd == -1)
     {
+      printf("error fd\n");
       exit(1);
     }
   metadata->fd = fd;
@@ -14,6 +15,7 @@ void* share_open(shm_meta* metadata, size_t size, const char* name, const char* 
   metadata->mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if(metadata->mem == MAP_FAILED)
     {
+      printf("error mem\n");
       close(fd);
       exit(1);
     }
@@ -21,14 +23,14 @@ void* share_open(shm_meta* metadata, size_t size, const char* name, const char* 
   metadata->sem = sem_open(sem_name, 0);
   if(metadata->sem == SEM_FAILED)
     {
-      perror("semaphore");
+      printf("error sem\n");
       munmap(metadata->mem, metadata->size);
       close(metadata->fd);
       exit(1);
     }
   metadata->sem_name = sem_name;
   sem_post(metadata->sem);
-
+  
   return metadata->mem; 
 }
 
@@ -72,7 +74,6 @@ void memory_write(shm_meta* metadata, double* buffer)
     {
       wave[i] = (float)buffer[i];
     }
-
   sem_post(metadata->sem);
 }
 

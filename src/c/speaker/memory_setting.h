@@ -1,6 +1,6 @@
 typedef struct {
   bool exit;
-  double wave[48000];
+  float wave[48000];
 } share_memory;
 
 typedef struct {

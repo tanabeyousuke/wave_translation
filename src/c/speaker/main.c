@@ -1,4 +1,5 @@
 #include "include.h"
+#include "math.h"
 #define SAMP 48000
 
 int main(void)
@@ -11,8 +12,8 @@ int main(void)
   size_t size = sizeof(share_memory);
   const char *name = "/wt_share_memory";
   const char *sem_name = "/wt_semaphore";
-  share_data = share_setting(&share_meta, size, name, sem_name); 
-  share_data->exit == true;
+  share_data = share_setting(&share_meta, size, name, sem_name);
+  share_data->exit == false;
 
   sound_init(&pa_meta);
 
@@ -21,12 +22,12 @@ int main(void)
   while(share_data->exit == false)
     {
       sem_wait(share_meta.sem);
-      
+
       for(int i = 0; i < 48000; i++)
 	{
 	  wave_output[i] = share_data->wave[i];
-	  printf("%f\n", wave_output[i]);
 	}
+
       sem_post(share_meta.sem);
 
       pa_simple_write(pa_meta.ps, wave_output, sizeof(float) * SAMP, NULL);
@@ -36,4 +37,3 @@ int main(void)
   share_close(&share_meta);
   return 0;
 }
-
