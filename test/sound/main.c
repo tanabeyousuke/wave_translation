@@ -1,24 +1,61 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <stdlib.h> // malloc, free, exit のために必要
 #include <math.h>
 
+// ========== 定数定義 ==========
 #define SAMPLE_RATE 44100      // サンプリングレート (Hz)
-#define FREQUENCY 440.0        // 再生する音の周波数 (A4の音、Hz)
+#define FREQUENCY 440.0        // 再生する音の周波数 (Hz)
 #define VOLUME 0.2             // 音量 (0.0 から 1.0)
-#define DURATION_SECONDS 2     // 再生時間 (秒)
 #define BUFFER_SIZE_MS 100     // 一度にキューに投入するデータの時間 (ミリ秒)
-#define MAX_QUEUE_SIZE 441000  // キューの最大サイズ (バイト)。例: 10秒分のデータ
 
+// キューの最大保持時間 (秒)
+#define MAX_QUEUE_DURATION_SECONDS 10
+// キューの最大サイズ (バイト) - (サンプルレート * チャンネル数 * 浮動小数点数サイズ * 秒数)
+#define MAX_QUEUE_SIZE (SAMPLE_RATE * sizeof(float) * 1 * MAX_QUEUE_DURATION_SECONDS) 
 
+// ========== 構造体定義 ==========
+
+typedef struct
+{
+  SDL_AudioSpec *want, *have;
+  SDL_AudioDeviceID *dev;
+} meta_sdl;
+
+typedef struct
+{
+  double current_phase;
+  int running; // ストリーミング継続フラグ
+  
+  int samples_per_buffer;
+  size_t buffer_size_bytes;
+  float* audio_buffer;
+  
+  meta_sdl *ms;
+} meta_sys;
+
+// ========== 関数プロトタイプ宣言 ==========
+meta_sdl* audio_init(void);
+meta_sys* system_setup(void);
+void generate_sine_wave(float* buffer, int num_samples, double* current_phase);
+void sound_write(meta_sys *meta);
+void system_cleanup(meta_sys *meta);
+
+// ========== サイン波生成関数 ==========
 void generate_sine_wave(float* buffer, int num_samples, double* current_phase)
 {
+  // 2 * π * 周波数 / サンプリングレート
   double phase_increment = 2.0 * M_PI * FREQUENCY / SAMPLE_RATE;
   
   for(int i = 0; i < num_samples; ++i)
     {
+      // サイン波を生成し、音量をかける
       buffer[i] = sin(*current_phase) * VOLUME;
       
+      // 位相を進める
       *current_phase += phase_increment;
+      
+      // 位相を 0 から 2π の範囲に保つ
       if(*current_phase >= 2.0 * M_PI)
 	{
 	  *current_phase -= 2.0 * M_PI;
@@ -26,129 +63,198 @@ void generate_sine_wave(float* buffer, int num_samples, double* current_phase)
     }
 }
 
-typedef struct{
-  SDL_AudioSpec *want, *have;
-  SDL_AudioDeviceID* dev;
-} meta_sdl;
-
-typedef struct{
-  double current_phase;
-  
-  int total_samples_to_generate;
-  int generated_samples;
-  
-  int samples_per_buffer;
-  size_t buffer_size_bytes;
-  float* audio_buffer;
-  meta_sdl *ms;
-} meta_sys;
-
+// ========== SDLオーディオ初期化 ==========
 meta_sdl* audio_init(void)
 {
-  meta_sdl *init = malloc(sizeof(meta_sdl));
-  init->want = malloc(sizeof(SDL_AudioSpec));
-  init->have = malloc(sizeof(SDL_AudioSpec));
-
-  init->dev = malloc(sizeof(SDL_AudioDeviceID));
-
+  meta_sdl *init = (meta_sdl*)malloc(sizeof(meta_sdl));
+  if (!init) return NULL;
+  
+  init->want = (SDL_AudioSpec*)malloc(sizeof(SDL_AudioSpec));
+  init->have = (SDL_AudioSpec*)malloc(sizeof(SDL_AudioSpec));
+  init->dev  = (SDL_AudioDeviceID*)malloc(sizeof(SDL_AudioDeviceID));
+  
+  if (!init->want || !init->have || !init->dev)
+    {
+      fprintf(stderr, "SDL初期化のためのメモリ確保に失敗しました。\n");
+      free(init->want); free(init->have); free(init->dev); free(init);
+      return NULL;
+    }
+  
   SDL_zero(*init->want); // 構造体をゼロクリア
   
-  init->want->freq = SAMPLE_RATE;          // サンプリングレート
-  init->want->format = AUDIO_F32SYS;       // 32bit浮動小数点数フォーマット
-  init->want->channels = 1;                // モノラル
-  init->want->samples = 0;                 // コールバックを使用しないため、この値は無視されることが多いが、0に設定
-
+  init->want->freq = SAMPLE_RATE;             // サンプリングレート
+  init->want->format = AUDIO_F32SYS;          // 32bit浮動小数点数フォーマット
+  init->want->channels = 1;                   // モノラル
+  init->want->samples = 0;                    // コールバックを使用しないため 0
+  
+  // デバイスを開く (NULLでデフォルトデバイス、0でプッシュ方式)
   *init->dev = SDL_OpenAudioDevice(NULL, 0, init->want, init->have, SDL_AUDIO_ALLOW_ANY_CHANGE);
   
   if (*init->dev == 0)
     {
-      printf("オーディオデバイスのオープンに失敗しました: %s\n", SDL_GetError());
-      SDL_Quit();
-      free(init->want);
-      free(init->have);
-      free(init->dev);
-      return 0;
+        fprintf(stderr, "オーディオデバイスのオープンに失敗しました: %s\n", SDL_GetError());
+        free(init->want); free(init->have); free(init->dev); free(init);
+        return NULL;
     }
   return init;
 }
 
-void system_setup(meta_sys *systemdata)
+// ========== システム全体初期化 ==========
+meta_sys* system_setup(void)
 {
-  systemdata = malloc(sizeof(meta_sys));
-  systemdata->current_phase = 0.0;
-  
-  systemdata->total_samples_to_generate = SAMPLE_RATE * DURATION_SECONDS;
-  systemdata->generated_samples = 0;
-  
-  systemdata->samples_per_buffer = (SAMPLE_RATE * BUFFER_SIZE_MS) / 1000;
-  systemdata->buffer_size_bytes = systemdata->samples_per_buffer * sizeof(float);
-  systemdata->audio_buffer = (float*)malloc(systemdata->buffer_size_bytes);
-  
-  if (systemdata->audio_buffer == NULL)
-    {
-      fprintf(stderr, "メモリ確保に失敗しました。\n");
-      exit(1);
-    }
-  
-  if (SDL_Init(SDL_INIT_AUDIO) < 0)
-    {
-      fprintf(stderr, "SDLの初期化に失敗しました: %s\n", SDL_GetError());
-      free(systemdata->audio_buffer);
-      exit(1);
-    }
-  
-  systemdata->ms = audio_init();
-  if(systemdata->ms == 0)
-    {
-      exit(1);
-    }
-}  
+    // SDLの初期化はオーディオデバイスを開く前に行う
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0)
+      {
+        fprintf(stderr, "SDLの初期化に失敗しました: %s\n", SDL_GetError());
+        return NULL;
+      }
+    
+    meta_sys *systemdata = (meta_sys*)malloc(sizeof(meta_sys));
+    if (!systemdata)
+      {
+        fprintf(stderr, "システム構造体のメモリ確保に失敗しました。\n");
+        SDL_Quit();
+        return NULL;
+      }
+    
+    systemdata->current_phase = 0.0;
+    systemdata->running = 0; // 初期状態では停止
+    
+    // バッファのサイズ計算
+    systemdata->samples_per_buffer = (SAMPLE_RATE * BUFFER_SIZE_MS) / 1000;
+    systemdata->buffer_size_bytes = systemdata->samples_per_buffer * sizeof(float);
+    systemdata->audio_buffer = (float*)malloc(systemdata->buffer_size_bytes);
+    
+    if (systemdata->audio_buffer == NULL)
+      {
+        fprintf(stderr, "オーディオバッファのメモリ確保に失敗しました。\n");
+        free(systemdata);
+        SDL_Quit();
+        return NULL;
+      }
+    
+    systemdata->ms = audio_init();
+    if(systemdata->ms == NULL)
+      {
+        free(systemdata->audio_buffer);
+        free(systemdata);
+        SDL_Quit();
+        return NULL;
+      }
+    return systemdata; 
+} 
 
+// ========== オーディオキューへのデータ投入 ==========
+void sound_write(meta_sys *meta)
+{
+  // バッファサイズ分のサイン波を生成
+  generate_sine_wave(meta->audio_buffer, meta->samples_per_buffer, &meta->current_phase);
+  
+    size_t bytes_to_queue = meta->buffer_size_bytes;
+    
+    // データをキューに投入 (プッシュ)
+    // SDLはキューが満杯の場合、投入できるまでブロック（待機）する。
+    // メインループで頻繁にチェックすることでブロック時間を最小化できるが、
+    // ここで直接ブロックさせても問題ない。
+    if (SDL_QueueAudio(*meta->ms->dev, meta->audio_buffer, bytes_to_queue) < 0)
+      {
+        fprintf(stderr, "オーディオキューへのプッシュに失敗しました: %s\n", SDL_GetError());
+        meta->running = 0; // 失敗したら終了
+      }
+}
+
+// ========== クリーンアップ処理 ==========
+void system_cleanup(meta_sys *meta)
+{
+  if (meta)
+    {
+      if (meta->ms)
+	{
+	  // デバイスを閉じる
+	  if (*meta->ms->dev != 0)
+	    {
+	      SDL_CloseAudioDevice(*meta->ms->dev);
+            }
+	  free(meta->ms->want);
+	  free(meta->ms->have);
+	  free(meta->ms->dev);
+	  free(meta->ms);
+        }
+      free(meta->audio_buffer);
+      free(meta);
+    }
+  // SDLを終了
+  SDL_Quit();
+} 
+
+// ========== メイン関数 ==========
 int main(int argc, char* argv[])
 {
-  meta_sys *meta;
-  system_setup(meta);
-  
-  printf("サイン波 (%.0f Hz) の再生データを生成・キューに投入中...\n", FREQUENCY);
-  
-  while (meta->generated_samples < meta->total_samples_to_generate)
-    {
-      int samples_to_generate = meta->samples_per_buffer;
-      if (meta->generated_samples + samples_to_generate > meta->total_samples_to_generate)
-	{
-	  samples_to_generate = total_samples_to_generate - generated_samples;
-	}
-      
-      while (SDL_GetQueuedAudioSize(*meta->ms->dev) > MAX_QUEUE_SIZE * 0.8)
-	{
-	  SDL_Delay(10); 
-	}
-      
-      generate_sine_wave(meta->audio_buffer, samples_to_generate, &meta->current_phase);
-      
-      size_t bytes_to_queue = samples_to_generate * sizeof(float);
-      if (SDL_QueueAudio(*ms->dev, audio_buffer, bytes_to_queue) < 0)
-	{
-	  fprintf(stderr, "オーディオキューへのプッシュに失敗しました: %s\n", SDL_GetError());
-	  break;
-	}
-      
-      generated_samples += samples_to_generate;
+    meta_sys *meta = system_setup();
+    if (meta == NULL) return 1;
+
+    SDL_Event event;
+    
+    // ストリーミング開始準備
+    meta->running = 1;
+    
+    // 最初の数バッファを投入し、再生が始まるまでの音切れを防ぐ
+    for(int i = 0; i < 5 && meta->running; ++i) {
+        sound_write(meta); 
     }
-  
-  SDL_PauseAudioDevice(*ms->dev, 0); // 0で再生、1で一時停止
-  printf("再生を開始しました。\n");
-  
-  printf("再生キューが空になるのを待機中...\n");
-  while (SDL_GetQueuedAudioSize(*ms->dev) > 0)
-    {
-      SDL_Delay(100); 
-    }
-  
-  printf("再生が完了しました。\n");
-  SDL_CloseAudioDevice(*ms->dev);    // デバイスを閉じる
-  SDL_Quit();                   // SDLを終了
-  free(audio_buffer);
-  
-  return 0;
+    
+    SDL_PauseAudioDevice(*meta->ms->dev, 0); // 再生開始
+    
+    printf("サイン波 (%.0f Hz) のストリーミング再生を開始しました。\n", FREQUENCY);
+    printf(" 'q'キーを押すか、ウィンドウを閉じると終了します。\n");
+
+    // メインストリーミングループ (イベント処理とバッファ補充)
+    int i = 0;
+    while (1)
+      {
+        // --- 1. イベント処理 (終了信号の監視) ---
+	i = i + 1;
+	if(i == 10)
+	  {
+	    printf("end\n");
+	    break;
+	  }
+	
+	
+	// --- 2. オーディオストリーミング処理 (バッファ補充) ---
+	Uint32 queued_size = SDL_GetQueuedAudioSize(*meta->ms->dev);
+	
+	/* キューに残っているデータが一定量（例: 2秒分）を下回ったらデータを補充する */
+	/* ここでは、MAX_QUEUE_SIZEの約20%を下回ったら補充する */
+	while(queued_size < (MAX_QUEUE_SIZE / 5) && queued_size < (meta->buffer_size_bytes * 5))
+	  {
+	    SDL_Delay(1);
+	  }
+	
+	sound_write(meta);
+	printf("add\n");
+	// CPU負荷を軽減するために少し待機
+	// SDL_QueueAudioがブロックするため、待機は短くてもよい
+      }
+    
+    // 再生中のデータを出し切るのを待つ
+    printf("再生キューに残ったデータがなくなるのを待機中...\n");
+
+    int size = SDL_GetQueuedAudioSize(*meta->ms->dev);
+    while (size > 0)
+      {
+	size = SDL_GetQueuedAudioSize(*meta->ms->dev);
+
+	printf("%d/", size); 
+	SDL_Delay(100); 
+      }
+     
+    // 終了時の処理
+    SDL_PauseAudioDevice(*meta->ms->dev, 1); // 一時停止
+    
+    printf("再生が完了し、終了します。\n");
+
+    system_cleanup(meta);
+
+    return 0;
 }
