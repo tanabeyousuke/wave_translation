@@ -1,10 +1,10 @@
 section basicdata
 name:wt
-link:gfortran -o <name> <obj> -lpulse -lpulse-simple -lm ; ./speaker.sh
+link:gfortran -o <name> <obj> $(sdl2-config --cflags --libs) -lm
 end section basicdata
 
 
 section assemble
 f90:src/fortran:gfortran -c <src> -o <obj>
-c:src/c:gcc -c <src> -o <obj>
+c:src/c:gcc -c <src> 
 end section assemble

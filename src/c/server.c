@@ -1,43 +1,5 @@
-#include <SDL2/SDL.h>
-#include <stdio.h>
-#include <stdlib.h> // malloc, free, exit のために必要
-#include <math.h>
+#include "include.h"
 
-#define SAMPLE_RATE 44100      // サンプリングレート (Hz)
-#define FREQUENCY 440.0        // 再生する音の周波数 (Hz)
-#define VOLUME 0.2             // 音量 (0.0 から 1.0)
-#define BUFFER_SIZE_MS 100     // 一度にキューに投入するデータの時間 (ミリ秒)
-
-#define MAX_QUEUE_DURATION_SECONDS 10
-#define MAX_QUEUE_SIZE (SAMPLE_RATE * sizeof(float) * 1 * MAX_QUEUE_DURATION_SECONDS) 
-
-
-typedef struct
-{
-  SDL_AudioSpec *want, *have;
-  SDL_AudioDeviceID *dev;
-} meta_sdl;
-
-typedef struct
-{
-  double current_phase;
-  int running; // ストリーミング継続フラグ
-  
-  int samples_per_buffer;
-  size_t buffer_size_bytes;
-  float* audio_buffer;
-  
-  meta_sdl *ms;
-} meta_sys;
-
-// ========== 関数プロトタイプ宣言 ==========
-meta_sdl* audio_init(void);
-meta_sys* system_setup(void);
-void generate_sine_wave(float* buffer, int num_samples, double* current_phase, float f);
-void sound_write(meta_sys *meta);
-void system_cleanup(meta_sys *meta);
-
-// ========== サイン波生成関数 ==========
 void generate_sine_wave(float* buffer, int num_samples, double* current_phase, float f)
 {
   // 2 * π * 周波数 / サンプリングレート
@@ -175,63 +137,64 @@ void system_cleanup(meta_sys *meta)
   SDL_Quit();
 } 
 
-// ========== メイン関数 ==========
-int main(int argc, char* argv[])
-{
-    meta_sys *meta = system_setup();
-    if (meta == NULL) return 1;
 
-    SDL_Event event;
-    
-    meta->running = 1;
 
-    for(int i = 0; i < 5 && meta->running; ++i) {
-        sound_write(meta); 
-    }
-    
-    SDL_PauseAudioDevice(*meta->ms->dev, 0); 
-    
-    int i = 0;
-    while (1)
-      {
-	i = i + 1;
-	if(i == 50)
-	  {
-	    printf("end\n");
-	    break;
-	  }
-	
-	generate_sine_wave(meta->audio_buffer, meta->samples_per_buffer, &meta->current_phase, 330 + (i * 10));
-	
-	Uint32 queued_size = SDL_GetQueuedAudioSize(*meta->ms->dev);
-	
-	while(queued_size < (MAX_QUEUE_SIZE / 5) && queued_size < (meta->buffer_size_bytes * 5))
-	  {
-	    SDL_Delay(1);
-	  }
-	
-	sound_write(meta);
-      }
-    
-    printf("再生キューに残ったデータがなくなるのを待機中...\n");
+/* int main(int argc, char* argv[]) */
+/* { */
+/*     meta_sys *meta = system_setup(); */
+/*     if (meta == NULL) return 1; */
 
-    int size;
-    do
-      {
-	size = SDL_GetQueuedAudioSize(*meta->ms->dev);
+/*     SDL_Event event; */
+    
+/*     meta->running = 1; */
+
+/*     for(int i = 0; i < 5 && meta->running; ++i) { */
+/*         sound_write(meta);  */
+/*     } */
+    
+/*     SDL_PauseAudioDevice(*meta->ms->dev, 0);  */
+    
+/*     int i = 0; */
+/*     while (1) */
+/*       { */
+/* 	i = i + 1; */
+/* 	if(i == 50) */
+/* 	  { */
+/* 	    printf("end\n"); */
+/* 	    break; */
+/* 	  } */
 	
-	printf("%d/", size); 
-	SDL_Delay(100); 
-      }
-    while (size > 0);
+/* 	generate_sine_wave(meta->audio_buffer, meta->samples_per_buffer, &meta->current_phase, 330 + (i * 10)); */
+	
+/* 	Uint32 queued_size = SDL_GetQueuedAudioSize(*meta->ms->dev); */
+	
+/* 	while(queued_size < (MAX_QUEUE_SIZE / 5) && queued_size < (meta->buffer_size_bytes * 5)) */
+/* 	  { */
+/* 	    SDL_Delay(1); */
+/* 	  } */
+	
+/* 	sound_write(meta); */
+/*       } */
+    
+/*     printf("再生キューに残ったデータがなくなるのを待機中...\n"); */
+
+/*     int size; */
+/*     do */
+/*       { */
+/* 	size = SDL_GetQueuedAudioSize(*meta->ms->dev); */
+	
+/* 	printf("%d/", size);  */
+/* 	SDL_Delay(100);  */
+/*       } */
+/*     while (size > 0); */
 
      
-    // 終了時の処理
-    SDL_PauseAudioDevice(*meta->ms->dev, 1); // 一時停止
+/*     // 終了時の処理 */
+/*     SDL_PauseAudioDevice(*meta->ms->dev, 1); // 一時停止 */
     
-    printf("再生が完了し、終了します。\n");
+/*     printf("再生が完了し、終了します。\n"); */
 
-    system_cleanup(meta);
+/*     system_cleanup(meta); */
 
-    return 0;
-}
+/*     return 0; */
+/* } */
