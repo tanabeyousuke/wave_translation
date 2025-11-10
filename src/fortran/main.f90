@@ -32,11 +32,21 @@ program c_interface
        type(c_ptr),value::meta
      end subroutine system_cleanup
      
-     !コイツラは後で書きます
-     ! subroutine sound_start(meta)
+     subroutine sound_start(meta) bind(c, name="sound_start")
+       use iso_c_binding
+       type(c_ptr),value::meta
+     end subroutine sound_start
+     
+     subroutine sound_stop(meta) bind(c, name="sound_stop")
+       use iso_c_binding
+       type(c_ptr),value::meta
+     end subroutine sound_stop
 
-     ! subroutine sound_stop(meta)
-         
+     function bp(meta) bind(c, name="buffer_pointer")
+       use iso_c_binding
+       type(c_ptr),value::meta
+       type(c_ptr)::bp
+     end function bp
   !    function login() bind(c, name="share_login") !共有メモリにログインします。
   !      use iso_c_binding
   !      type(c_ptr) login
@@ -64,11 +74,27 @@ program c_interface
 
   end interface
   type(c_ptr) mt
+  type(c_ptr) event
+  type(c_ptr) bufp
 
+  real(c_float),pointer::buf(:)
+  integer i
+  real ro
+  
   mt = system_setup()
-  print *, "準備完了！"
+
+  bufp = bp(mt)
+  call c_f_pointer(bufp, buf, SHAPE=[4410])
+
+  do i=1, 4410
+     ro = 2.0 * 3.1415927 * 1000 / 44100.0 * i
+     buf(i) = sin(ro) * 0.8
+     print *, buf(i)
+  end do
+
+  call sound_start(mt)
+  call sound_stop(mt)
   call system_cleanup(mt)
-  print *, "終わるよ"
   ! integer s1
   ! real,parameter::pi = 3.1415927
   ! real,parameter::samp = 48000.0

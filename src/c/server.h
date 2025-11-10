@@ -22,3 +22,5 @@ meta_sys* system_setup(void);
 void generate_sine_wave(float* buffer, int num_samples, double* current_phase, float f);
 void sound_write(meta_sys *meta);
 void system_cleanup(meta_sys *meta);
+void sound_start(meta_sys *meta);
+void sound_stop(meta_sys *meta);

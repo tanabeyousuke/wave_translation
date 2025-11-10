@@ -20,6 +20,3 @@ contains
     end do
   end subroutine write_wave
 end module sound_generate
-  
-  
-

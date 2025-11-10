@@ -106,6 +106,13 @@ meta_sys* system_setup(void)
 void sound_write(meta_sys *meta)
 {
   size_t bytes_to_queue = meta->buffer_size_bytes;
+  Uint32 queued_size = SDL_GetQueuedAudioSize(*meta->ms->dev);
+	
+  while(queued_size < (MAX_QUEUE_SIZE / 5) && queued_size < (meta->buffer_size_bytes * 5))
+    {
+      SDL_Delay(1);
+    }
+
   if (SDL_QueueAudio(*meta->ms->dev, meta->audio_buffer, bytes_to_queue) < 0)
     {
       fprintf(stderr, "オーディオキューへのプッシュに失敗しました: %s\n", SDL_GetError());
@@ -137,8 +144,33 @@ void system_cleanup(meta_sys *meta)
   SDL_Quit();
 } 
 
+void sound_start(meta_sys *meta)
+{
+    SDL_PauseAudioDevice(*meta->ms->dev, 0);
+}  
 
+void sound_stop(meta_sys *meta)
+{
+  int size;
+    do
+      {
+	size = SDL_GetQueuedAudioSize(*meta->ms->dev);
+	
+	printf("%d/", size);
+	SDL_Delay(100);
+      }
+    while (size > 0);
 
+     
+    // 終了時の処理
+    SDL_PauseAudioDevice(*meta->ms->dev, 1); // 一時停止
+}
+
+void* buffer_pointer(meta_sys *meta)
+{
+  return meta->audio_buffer;
+}
+  
 /* int main(int argc, char* argv[]) */
 /* { */
 /*     meta_sys *meta = system_setup(); */
