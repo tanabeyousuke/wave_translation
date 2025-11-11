@@ -195,16 +195,16 @@ int main(int argc, char* argv[])
     while (1)
       {
 	i = i + 1;
-	if(i == 50)
+	if(i == 1000)
 	  {
 	    printf("end\n");
 	    break;
 	  }
 	
-	generate_sine_wave(meta->audio_buffer, meta->samples_per_buffer, &meta->current_phase, 330 + (i * 10));
+	generate_sine_wave(meta->audio_buffer, meta->samples_per_buffer, &meta->current_phase, 330 + i);
 	
 	Uint32 queued_size = SDL_GetQueuedAudioSize(*meta->ms->dev);
-	
+	printf("%d\n", queued_size);
 	while(queued_size < (MAX_QUEUE_SIZE / 5) && queued_size < (meta->buffer_size_bytes * 5))
 	  {
 	    SDL_Delay(1);

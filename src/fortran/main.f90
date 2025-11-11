@@ -89,10 +89,13 @@ program c_interface
   do i=1, 4410
      ro = 2.0 * 3.1415927 * 1000 / 44100.0 * i
      buf(i) = sin(ro) * 0.8
-     print *, buf(i)
   end do
 
+
   call sound_start(mt)
+  do i=1, 100
+     call sound_write(mt)
+  end do
   call sound_stop(mt)
   call system_cleanup(mt)
   ! integer s1

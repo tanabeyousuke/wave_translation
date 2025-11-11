@@ -24,3 +24,4 @@ void sound_write(meta_sys *meta);
 void system_cleanup(meta_sys *meta);
 void sound_start(meta_sys *meta);
 void sound_stop(meta_sys *meta);
+void* buffer_pointer(meta_sys *meta);
