@@ -158,7 +158,6 @@ void sound_stop(meta_sys *meta)
       {
 	size = SDL_GetQueuedAudioSize(*meta->ms->dev);
 	
-	printf("%d/", size);
 	SDL_Delay(100);
       }
     while (size > 0);
