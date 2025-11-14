@@ -15,11 +15,12 @@ contains
 
     call c_f_pointer(bp(mt), input, SHAPE=[4410])
     
-    len=(60 * 4) / (120 * 4)
+    len=(60 * 4.0) / (120 * 4) * 44100
+    print *, len
 
     allocate(buf(len))
     do i=1, len
-       buf(i) = osc_sin(440 * (i / 44100.0)) * osc_sin(i / (44100.0 / 5))
+        buf(i) = sin(2 * 3.1415927 * 440 * (i / 44100.0)) * 0.8;
     end do
 
     i = 0
@@ -29,9 +30,9 @@ contains
        else
           input(1:4410) = buf(i:i+4409)
        end if
-       call sound_write(mt)
        i = i + 4410
-       if(len - 1 < 4410) exit
+       call sound_write(mt)
+       if(len - i < 4410) exit
     end do
        
 

@@ -107,7 +107,6 @@ void sound_write(meta_sys *meta)
 {
   size_t bytes_to_queue = meta->buffer_size_bytes;
   Uint32 queued_size = SDL_GetQueuedAudioSize(*meta->ms->dev);
-  printf("%d\n", queued_size);
 
   while(queued_size > (MAX_QUEUE_SIZE / 5) || queued_size > (meta->buffer_size_bytes * 5))
     {
