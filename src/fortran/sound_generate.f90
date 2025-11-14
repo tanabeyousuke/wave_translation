@@ -2,10 +2,14 @@ module sound_generate
   use c_if
   use env
   use osc
+  use parse
   implicit none
 
+
 contains
-  
+
+
+
   subroutine play(mt)
     type(c_ptr),intent(in)::mt
 
@@ -15,12 +19,11 @@ contains
 
     call c_f_pointer(bp(mt), input, SHAPE=[4410])
     
-    len=(60 * 4.0) / (120 * 4) * 44100
-    print *, len
+    len=(60 * 4.0) / (120 * 1) * 44100
 
     allocate(buf(len))
     do i=1, len
-        buf(i) = sin(2 * 3.1415927 * 440 * (i / 44100.0)) * 0.8;
+        buf(i) = osc_sin(440 * (i / 44100.0)) * 0.8;
     end do
 
     i = 0
@@ -34,7 +37,6 @@ contains
        call sound_write(mt)
        if(len - i < 4410) exit
     end do
-       
 
   end subroutine play
 end module sound_generate

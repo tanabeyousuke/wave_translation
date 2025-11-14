@@ -5,7 +5,7 @@ contains
     real,intent(in)::x
     real osc_sin
 
-    osc_sin = sin((2 * 3.14159265) + (x - aint(x)))
+    osc_sin = sin((2 * 3.14159265) * (x - aint(x)))
   end function osc_sin
 
   function osc_delta(x)
