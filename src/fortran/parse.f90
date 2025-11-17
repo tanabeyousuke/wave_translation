@@ -312,7 +312,7 @@ contains
   
   subroutine setup_music(filename, m)
     character(*),intent(in)::filename
-     type(music),intent(inout)::m
+    type(music),intent(inout)::m
 
     integer unit_num, synth_unit_num, iostat_value, synth_iostat_value, scpos, num, i
     character(len=80) line, file
@@ -326,20 +326,21 @@ contains
 
     read(unit_num, '(A:)', iostat=iostat_value) line
     read(line, *) num
-    allocate(m%synth(num))
+    print *, num
+    ! allocate(m%synth(num))
     
     do i = 1, num
        read(unit_num, '(A:)', iostat=iostat_value) line
        
        synth_unit_num = 10 + i
-       open(unit=synth_unit_num, file=line, status='OLD', iostat=synth_iostat_value)
-       if(iostat_value /= 0)then
-          print *, "error: ", line, "open_failed"
-          stop
-       end if
+       print *, line, synth_unit_num
+       ! open(unit=synth_unit_num, file=line, status='OLD', iostat=synth_iostat_value)
+       ! if(iostat_value /= 0)then
+       !    print *, "error: ", line, "open_failed"
+       !    stop
+       ! end if
        
-       m%synth(i)%unit_num = synth_unit_num
-       
+       ! m%synth(i)%unit_num = synth_unit_num
        
     end do
   

@@ -1,0 +1,5 @@
+module_num:
+  osc 2;
+  flt 2;
+  env 2;
+  lfo 1;
