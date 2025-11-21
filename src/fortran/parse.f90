@@ -50,7 +50,7 @@ contains
     real num_reg
 
     if(op(1:1) == "r") then
-       read(op(2:4), *) num
+       read(op(2:), *) num
        num = num * (-1)
        num_reg = num
     else
@@ -124,7 +124,7 @@ contains
           read(line(ophead:optail), *) set%flt_n
 
        case("env")
-          optail = optail + 1
+          optail = optail + 1 
           call get_token(line, ophead, optail, scpos)
 
           read(line(ophead:optail), *) set%env_n
@@ -175,7 +175,6 @@ contains
        call get_token(line, ophead, optail, scpos)
        operate = line(ophead:optail)
        
-       print *, operate
        select case(trim(operate))
        case("osc")
           osc_num = osc_num + 1
@@ -326,21 +325,22 @@ contains
 
     read(unit_num, '(A:)', iostat=iostat_value) line
     read(line, *) num
-    print *, num
-    ! allocate(m%synth(num))
+    allocate(m%synth(num))
     
     do i = 1, num
        read(unit_num, '(A:)', iostat=iostat_value) line
        
        synth_unit_num = 10 + i
-       print *, line, synth_unit_num
-       ! open(unit=synth_unit_num, file=line, status='OLD', iostat=synth_iostat_value)
-       ! if(iostat_value /= 0)then
-       !    print *, "error: ", line, "open_failed"
-       !    stop
-       ! end if
+       open(unit=synth_unit_num, file=line, status='OLD', iostat=synth_iostat_value)
+       if(iostat_value /= 0)then
+          print *, "error: ", line, "open_failed"
+          stop
+       end if
        
-       ! m%synth(i)%unit_num = synth_unit_num
+       m%synth(i)%unit_num = synth_unit_num
+
+       call module_num_setting(m%synth(i)%unit_num, m%synth(i))
+       call synth_setting(m%synth(i)%unit_num, m%synth(i))
        
     end do
   

@@ -2,7 +2,7 @@
 !一台のシンセにreal型のレジスタがr1からr64まである
 
 module_num: !それぞれのモジュールの数 integer型
-  osc 3;
+  osc 2;
   flt 2;
   env 2;
   lfo 1;
@@ -10,7 +10,6 @@ module_num: !それぞれのモジュールの数 integer型
 setting:
   osc sin 30;
   osc del 40; !オシレータ自体の音量 最大で合計100
-  osc sqr 30;
 
   flt low r1 r2; !フィルターの設定 第一にカットオフ周波数、第二にレゾナンス
   flt hig r3 r4; !フィルターは複数書いた場合上から直列で接続される

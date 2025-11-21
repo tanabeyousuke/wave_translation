@@ -25,5 +25,7 @@ program c_interface
 
   call setup_music("technopolis.msc", music_data)
 
+  print *, music_data%synth(1)%flt%f
 end program c_interface
+
  
