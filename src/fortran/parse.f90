@@ -33,9 +33,10 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      real amp
 
      integer unit_num 
-     real,allocatable::note_wave(:)
+     real,allocatable::note_wave1(:)
+     real,allocatable::note_wave2(:)
      real bpm
-     integer len,nokori
+     integer len1,len2,nokori,slc
 
   end type setting
 
