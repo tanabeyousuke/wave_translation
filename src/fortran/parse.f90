@@ -36,7 +36,8 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      real,allocatable::note_wave1(:)
      real,allocatable::note_wave2(:)
      real bpm
-     integer len1,len2,nokori,slc
+     integer::len1,len2,nokori
+     logical::slc
 
   end type setting
 
