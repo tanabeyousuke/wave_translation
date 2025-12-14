@@ -20,26 +20,29 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   type::lfo
      real lfo_unit(4)
   end type lfo
+
+  type::real_array
+     real,allocatable::array(:)
+  end type real_array
   
   type::setting
      type(oscillator), allocatable::osc(:)
      type(filter), allocatable::flt(:)
-     type(envelope), allocatable::env(:)
      type(lfo), allocatable::lfo(:)
+     type(envelope) :: env
+
      integer osc_n
      integer flt_n
-     integer env_n
      integer lfo_n
      real amp
 
-     integer unit_num 
-     real,allocatable::note_wave1(:)
-     real,allocatable::note_wave2(:)
-     real bpm
-     integer::len1,len2,nokori
+     integer::unit_num 
+     type(real_array),pointer::buffer(:)
+     integer,dimension(:)::length(5)
+     integer::next
      logical::slc
 
-  end type setting
+  end type setting 
 
   type music
      type(setting), allocatable::synth(:)
@@ -125,12 +128,6 @@ contains
 
           read(line(ophead:optail), *) set%flt_n
 
-       case("env")
-          optail = optail + 1 
-          call get_token(line, ophead, optail, scpos)
-
-          read(line(ophead:optail), *) set%env_n
-
        case("lfo")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
@@ -155,11 +152,9 @@ contains
 
     allocate(set%osc(set%osc_n))
     allocate(set%flt(set%flt_n))
-    allocate(set%env(set%env_n))
     allocate(set%lfo(set%lfo_n))
     osc_num = 0
     flt_num = 0
-    env_num = 0
     lfo_num = 0
     
     do
@@ -233,15 +228,7 @@ contains
  
        case("env")
           optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
           
-          operate = trim(line(ophead:optail))
-          read(operate, *) rgx(1)
-          if(env_num < rgx(1)) then
-             env_num = env_num + 1 
-          end if
-          
-          optail = optail + 1
           call get_token(line, ophead, optail, scpos)
 
           operate = trim(line(ophead:optail))
@@ -265,9 +252,9 @@ contains
           operate = trim(line(ophead:optail))
 
           if(rgx(1) < 5) then
-             set%env(env_num)%env_unit(rgx(1)) = num_reg(operate)
+             set%env%env_unit(rgx(1)) = num_reg(operate)
           else
-             set%env(env_num)%out = num_reg(operate)
+             set%env%out = num_reg(operate)
           end if
            
        case("lfo")
@@ -309,6 +296,8 @@ contains
           set%amp = num_reg(operate)
        end select
     end do
+
+    set%next = 1
   end subroutine synth_setting
   
   subroutine setup_music(filename, m)
