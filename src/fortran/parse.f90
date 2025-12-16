@@ -37,7 +37,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      real amp
 
      integer::unit_num 
-     type(real_array),pointer::buffer(:)
+     type(real_array),dimension(:)::buffer(5)
      integer,dimension(:)::length(5)
      integer::next
      logical::slc
@@ -334,7 +334,13 @@ contains
        call synth_setting(m%synth(i)%unit_num, m%synth(i))
        
     end do
-  
   end subroutine setup_music
+  
+  subroutine next_notes_read(set, array)
+    type(setting),intent(inout)::set
+    real,allocatable,intent(inout)::array(:)
 
+    
+
+  end subroutine next_notes_read
 end module parse
