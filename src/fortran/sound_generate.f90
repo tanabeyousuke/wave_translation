@@ -47,17 +47,4 @@ contains
     end do
   end subroutine play
 
-  subroutine fill_buffer(set)
-    type(setting)::set
-
-    integer::i, index, start
-
-    start = set%next
-    do i=1,5
-       index = MODULO(start + i - 2, 5) + 1
-       if(allocated(set%buffer(index)%array) .eqv. .false.) then
-          call next_notes_read(set, set%buffer(index)%array)
-       end if
-    end do
-  end subroutine fill_buffer
 end module sound_generate
