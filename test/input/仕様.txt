@@ -1,33 +1,22 @@
-!音楽ファイルの内容はこんな感じにする予定
-!一台のシンセにreal型のレジスタがr1からr64まである
-
-module_num: !それぞれのモジュールの数 integer型
-  osc 2;
-  flt 2;
-  env 2;
-  lfo 1;
+unit_num: !特定ユニットの数
+	lfo 1; !lfoの個数
+	efc 3;
 
 setting:
-  osc sin 30;
-  osc del 40; !オシレータ自体の音量 最大で合計100
+  osc sin 30; !オシレータの音量 百分率
+  osc del 70;
 
-  flt low r1 r2; !フィルターの設定 第一にカットオフ周波数、第二にレゾナンス
-  flt hig r3 r4; !フィルターは複数書いた場合上から直列で接続される
+  env atk r5;
+  env dec r6;
+  env sus r7;
+  env rel r8;
+  env out r12;
 
-  env 1 atk r5;	!今回は上からアタック、ディケイ、サスティン、リリース、出力
-  env 1 dec r6; !共通して第一にエンベロープ・ジェネレータの番号(必ず1から順番、integer型)
-  env 1 sus r7;
-  env 1 rel r8;
-  env 1 out r12;
+  lfo sin r1 r9 r10; !波形、周波数、振幅、オフセット、出力 
 
-  env 2 atk r5;	!今回は上からアタック、ディケイ、サスティン、リリース、出力
-  env 2 dec r6; !共通して第一にエンベロープ・ジェネレータの番号(必ず1から順番、integer型)
-  env 2 sus r7;
-  env 2 rel r8;
-  env 2 out r12;
-
-  lfo sin r1 r9 r10; !第一に出力レジスタ、第二に周波数、第三に振幅
-
+  efc low 3000 15; !エフェクト 入力数は種類によって異なる
+  efc bit 15;
+  
   amp r5; !最終的にどれぐらいの大きさで音を出すか決めるアンプ
 
 play:

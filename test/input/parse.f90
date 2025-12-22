@@ -1,51 +1,46 @@
 module parse !パーサです。シンセサイザの設定や演奏の実行などを処理します。
   implicit none
+
+  type::param
+     real::value
+     integer::reg_num
      
-  type::oscillator
-     integer f!波形
-     real g!オシレータのゲイン
-  end type oscillator
- 
-  type::filter
-     integer t!フィルタの種類
-     real f!カットオフ周波数
-     real r!レゾナンス
-  end type filter
-  
-  type::envelope
-     real env_unit(4)
-     real out
-  end type envelope
+     logical::rorv
+  end type param
   
   type::lfo
-     real lfo_unit(4)
+     integer::form !波形
+     type(param)::p(4) !周波数、振幅、オフセット、出力
   end type lfo
+
+  type::effect
+     integer::type
+     type(param)::p(5)
+     real,allocatable::array(:)
+  end type effect
   
   type::setting
-     type(oscillator), allocatable::osc(:)
-     type(filter), allocatable::flt(:)
-     type(envelope), allocatable::env(:)
-     type(lfo), allocatable::lfo(:)
-     integer osc_n
-     integer flt_n
-     integer env_n
-     integer lfo_n
-     real amp
+     type(param)::osc_g(5) !オシレータのゲイン 1から順にsin、三角、矩形、鋸、ノイズ
+     type(param)::env(5) !エンベロープのパラメータ 1から順にatk,dec,sus,rel,出力
+     type(lfo),allocatable::lfo(:) !ゲインにつなぐLFOのパラメータ 周波数、振幅、オフセット、出力
+     type(effect),allocatable::efc(:) !エフェクト 
+     integer::lfo_num
+     integer::efc_num
+     
+     type(param)::amp
   end type setting
   
 contains
-  function num_reg(op)!レジスタ番号を実数に直します。
+  subroutine num_reg(op, p)!レジスタ番号を実数に直します。
     character(*), intent(in)::op
-    real num
-    real num_reg
+    type(param),p
 
     if(op(1:1) == "r") then
-       read(op(2:4), *) num
-       num = num * (-1)
-       num_reg = num
+       read(op(2:4), *) p%reg_num
+       p%rorv = .true.
     else
-       read(op, *) num
-       num_reg = num
+       read(op, *) p%value
+       p%rorv = .true.
     end if
   end function num_reg
 
@@ -101,29 +96,16 @@ contains
        operate = trim(line(ophead:optail))
 
        select case(operate)
-       case("osc")
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-          operate = line(ophead:optail)
-          read(operate, *) set%osc_n
-
-       case("flt")
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-
-          read(line(ophead:optail), *) set%flt_n
-
-       case("env")
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-
-          read(line(ophead:optail), *) set%env_n
-
        case("lfo")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
 
           read(line(ophead:optail), *) set%lfo_n
+       case("efc")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+
+          read(line(ophead:optail), *) set%efc_n
        end select
     end do
 
@@ -141,14 +123,10 @@ contains
 
     ophead = 0
 
-    allocate(set%osc(set%osc_n))
-    allocate(set%flt(set%flt_n))
-    allocate(set%env(set%env_n))
-    allocate(set%lfo(set%lfo_n))
-    osc_num = 0
-    flt_num = 0
-    env_num = 0
-    lfo_num = 0
+    allocate(set%lfo(set%lfo_num))
+    allocate(set%efc(set%efc_num))
+    set%lfo_num = 0
+    set%efc_num = 0
     
     do
        read(unit_num, '(A:)', iostat=iostat_value)line
