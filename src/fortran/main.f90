@@ -17,8 +17,7 @@ program c_interface
   mt = system_setup()
   bufp = bp(mt)
 
-  call setup_music("technopolis.msc", music_data)
-  call fill_buffer(music_data%synth(1))
+  call setup_music("tamabashi.msc", music_data)
 
   ! call write(music_data%synth(1))
 

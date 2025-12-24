@@ -1,59 +1,69 @@
 module parse !パーサです。シンセサイザの設定や演奏の実行などを処理します。
   implicit none
-
-  type::param
-     real::value
-     integer::reg_num
      
-     logical::rorv
-  end type param
+  type::oscillator
+     integer f!波形
+     real g!オシレータのゲイン
+  end type oscillator
+ 
+  type::filter
+     integer t!フィルタの種類
+     real f!カットオフ周波数
+     real r!レゾナンス
+  end type filter
+  
+  type::envelope
+     real env_unit(4)
+     real out
+  end type envelope
   
   type::lfo
-     integer::form !波形
-     type(param)::p(4) !周波数、振幅、オフセット、出力
+     real lfo_unit(4)
   end type lfo
 
-  type::effect
-     integer::type
-     type(param)::p(5)
+  type::real_array
      real,allocatable::array(:)
-  end type effect
+  end type real_array
   
   type::setting
-     type(param)::osc_g(5) !オシレータのゲイン 1から順にsin、三角、矩形、鋸、ノイズ
-     type(param)::env(5) !エンベロープのパラメータ 1から順にatk,dec,sus,rel,出力
-     type(lfo),allocatable::lfo(:) !ゲインにつなぐLFOのパラメータ 周波数、振幅、オフセット、出力
-     type(effect),allocatable::efc(:) !エフェクト 
-     integer::lfo_num
-     integer::efc_num
-     
-     type(param)::amp
+     type(oscillator), allocatable::osc(:)
+     type(filter), allocatable::flt(:)
+     type(lfo), allocatable::lfo(:)
+     type(envelope) :: env
+
+     integer osc_n
+     integer flt_n
+     integer lfo_n
+     real amp
 
      integer::unit_num 
-     real::buffer(220500)
-     integer::space
+     type(real_array),dimension(:)::buffer(5)
+     integer,dimension(:)::length(5)
+     integer::next
      logical::slc
 
-  end type setting
+  end type setting 
 
   type music
      type(setting), allocatable::synth(:)
   end type music
-  
+
 contains
-  subroutine num_reg(op, p)!レジスタ番号を実数に直します。
+  function num_reg(op)!レジスタ番号を実数に直します。
     character(*), intent(in)::op
-    type(param),intent(inout)::p
+    real num
+    real num_reg
 
     if(op(1:1) == "r") then
-       read(op(2:4), *) p%reg_num
-       p%rorv = .true.
+       read(op(2:), *) num
+       num = num * (-1)
+       num_reg = num
     else
-       read(op, *) p%value
-       p%rorv = .false.
+       read(op, *) num
+       num_reg = num
     end if
-  end subroutine num_reg
- 
+  end function num_reg
+
   subroutine get_token(line, head, tail, scpos) !スペースで囲まれた部分の先端と後端を取り出します。実際の使い方は下に
     character(len=80),intent(in)::line
     integer,intent(in)::scpos
@@ -92,16 +102,13 @@ contains
     
     do
        read(unit_num, '(A:)', iostat=iostat_value) line
-       do i = 1, len(line)
-          if (line(i:i) == char(9)) line(i:i) = ' '
-       end do
        
+       scpos = index(line, ";")
        setpos = index(line, "setting:")
+       
        if(setpos /= 0) exit
        
-       scpos = index(line, ';')
        if(scpos == 0) cycle
-       
 
        optail = 1
        call get_token(line, ophead, optail, scpos)
@@ -109,18 +116,26 @@ contains
        operate = trim(line(ophead:optail))
 
        select case(operate)
+       case("osc")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = line(ophead:optail)
+          read(operate, *) set%osc_n
+
+       case("flt")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+
+          read(line(ophead:optail), *) set%flt_n
+
        case("lfo")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
 
-          read(line(ophead:optail), *) set%lfo_num
-       case("efc")
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-
-          read(line(ophead:optail), *) set%efc_num
+          read(line(ophead:optail), *) set%lfo_n
        end select
     end do
+
   end subroutine module_num_setting
   
   subroutine synth_setting(unit_num, set)
@@ -130,32 +145,20 @@ contains
     character(len=80) line
     character(len=5) operate
     integer iostat_value, scpos, playpos, ophead, optail
-    integer i, ro, lfo_num, efc_num, rgx(5)
+    integer i, ro, osc_num, flt_num, env_num, lfo_num, rgx(5)
     logical lrgx(5)
 
     ophead = 0
 
-    allocate(set%lfo(set%lfo_num))
-    allocate(set%efc(set%efc_num))
+    allocate(set%osc(set%osc_n))
+    allocate(set%flt(set%flt_n))
+    allocate(set%lfo(set%lfo_n))
+    osc_num = 0
+    flt_num = 0
     lfo_num = 0
-    efc_num = 0
-
-    do i = 1, 5
-       set%osc_g(i)%value = 0
-       set%osc_g(i)%rorv = .false.
-    end do
-
-    do i = 1, 5
-       set%env(i)%value = 0
-       set%env(i)%rorv = .false.
-    end do
-      
     
     do
        read(unit_num, '(A:)', iostat=iostat_value)line
-       do i = 1, len(line)
-          if (line(i:i) == char(9)) line(i:i) = ' '
-       end do
        
        playpos = index(line, "play:")
        if(playpos /= 0) exit
@@ -171,6 +174,8 @@ contains
        
        select case(trim(operate))
        case("osc")
+          osc_num = osc_num + 1
+
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           
@@ -184,19 +189,48 @@ contains
              rgx(1) = 3
           case("saw")
              rgx(1) = 4
-          case("rnd")
-             rgx(1) = 5
           end select
+          
+          set%osc(osc_num)%f = rgx(1)
 
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = trim(line(ophead:optail))
-          call num_reg(operate, set%osc_g(rgx(1)))
+          set%osc(osc_num)%g = num_reg(operate)
 
-       case("env")
+       case("flt")
+          flt_num = flt_num + 1
+
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
+
+          operate = trim(line(ophead:optail))
+          select case(operate)
+          case("low")
+             rgx(1) = 1
+          case("hig")
+             rgx(1) = 2
+          end select
+
+          set%flt(flt_num)%t = rgx(1)
+
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+             
+          operate = trim(line(ophead:optail))
+          set%flt(flt_num)%f = num_reg(operate)
+
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+             
+          operate = trim(line(ophead:optail))
+          set%flt(flt_num)%r = num_reg(operate)
+ 
+       case("env")
+          optail = optail + 1
           
+          call get_token(line, ophead, optail, scpos)
+
           operate = trim(line(ophead:optail))
 
           select case(operate)
@@ -217,7 +251,11 @@ contains
 
           operate = trim(line(ophead:optail))
 
-          call num_reg(operate, set%env(rgx(1)))
+          if(rgx(1) < 5) then
+             set%env%env_unit(rgx(1)) = num_reg(operate)
+          else
+             set%env%out = num_reg(operate)
+          end if
            
        case("lfo")
           lfo_num = lfo_num + 1
@@ -240,99 +278,28 @@ contains
              rgx(1) = 5
           end select
           
-          set%lfo(lfo_num)%form = rgx(1)
+          set%lfo(lfo_num)%lfo_unit(1) = rgx(1)
 
-          do i = 1, 3
+          do i = 2, 4
              optail = optail + 1
              call get_token(line, ophead, optail, scpos)
              operate = line(ophead:optail)
 
-             call num_reg(operate, set%lfo(lfo_num)%p(i))
+             set%lfo(lfo_num)%lfo_unit(i) = num_reg(operate)
           end do
-
-       case("efc");
-          efc_num = efc_num + 1
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-
-          operate = trim(line(ophead:optail))
-
-          select case(operate)
-          case("low")
-             rgx(1) = 1
-          case("hig")
-             rgx(1) = 2
-          case("bnd")
-             rgx(1) = 3
-          case("dly")
-             rgx(1) = 4
-          case("bit")
-             rgx(1) = 5
-          case("com")
-             rgx(1) = 6
-          case("hcl")
-             rgx(1) = 7
-          case("scl")
-             rgx(1) = 8
-          case("fbc")
-             rgx(1) = 9
-          end select
-
-          set%efc(efc_num)%type = rgx(1)
-
-          do i = 1, 5
-             optail = optail + 1
-             call get_token(line, ophead, optail, scpos)
-             operate = line(ophead:optail)
-
-             call num_reg(operate, set%efc(efc_num)%p(i))
-             if(scpos - optail < 2)then
-                exit
-             end if
-          end do
-
+          
        case("amp")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = line(ophead:optail)
           
-          call num_reg(operate, set%amp) 
+          set%amp = num_reg(operate)
        end select
     end do
+
+    set%next = 1
   end subroutine synth_setting
   
-  subroutine execute(filename, unit_num)
-    character(*),intent(in)::filename
-    integer unit_num
-
-    character(len=80) line, mnemonic
-    integer  iostat_value, scpos, modpos
-    type(setting) set
-
-    open(unit=unit_num, file=filename, status='OLD', iostat=iostat_value)
-    if(iostat_value /= 0)then
-       print *, "error"
-       stop
-    end if
-
-    do
-       read(unit_num, '(A:)', iostat=iostat_value) line
-
-       if(iostat_value /= 0) exit
-       ! print *, line
-
-       modpos = index(line, "module_num:")
-       if(modpos /= 0) exit
-       
-    end do
-    
-    call module_num_setting(unit_num, set)
-
-    call synth_setting(unit_num, set)
-    
-    close(unit_num)
-
-  end subroutine execute
   subroutine setup_music(filename, m)
     character(*),intent(in)::filename
     type(music),intent(inout)::m
@@ -376,5 +343,4 @@ contains
     
 
   end subroutine next_notes_read
-
 end module parse

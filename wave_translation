@@ -1,0 +1,10 @@
+  /home/tanabe/git/wave_translation:
+  合計 96
+  drwxr-xr-x  5 tanabe tanabe  4096 12月 24 12:36 .
+  drwxr-xr-x 10 tanabe tanabe  4096 12月 17 20:37 ..
+* -rw-r--r--  1 tanabe tanabe   218 11月  9 13:57 .build_data
+* drwxr-xr-x  8 tanabe tanabe  4096 12月 24 12:35 .git
+* -rw-r--r--  1 tanabe tanabe   315  9月 22 01:34 README.md
+* drwxr-xr-x  4 tanabe tanabe  4096  9月 22 01:34 src
+* drwxr-xr-x  7 tanabe tanabe  4096 12月 12 16:12 test
+* -rwxr-xr-x  1 tanabe tanabe 50440 12月 15 17:38 wt
