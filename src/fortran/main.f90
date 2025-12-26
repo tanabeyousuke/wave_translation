@@ -1,4 +1,4 @@
-program c_interface
+program main
   use c_if
   use sound_generate
   use iso_c_binding
@@ -19,13 +19,13 @@ program c_interface
 
   call setup_music("tamabashi.msc", music_data)
 
-  ! call write(music_data%synth(1))
+  call buf_fill(music_data)
 
-  ! call sound_start(mt)
-  ! call play(mt, music_data%synth(1))
-  ! call sound_stop(mt)
+  call sound_start(mt)
+  call play(mt, music_data)
+  call sound_stop(mt)
 
   call system_cleanup(mt)
-end program c_interface
+end program main
 
  
