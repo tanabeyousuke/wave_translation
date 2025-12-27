@@ -19,7 +19,7 @@ program main
 
   call setup_music("tamabashi.msc", music_data)
 
-  call buf_fill(music_data)
+  call music_generate(music_data)
 
   call sound_start(mt)
   call play(mt, music_data)

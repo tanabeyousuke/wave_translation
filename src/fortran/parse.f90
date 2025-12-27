@@ -11,6 +11,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   type::voice
      logical::play
      integer::count
+     integer::pn
      logical::push
   end type voice
 

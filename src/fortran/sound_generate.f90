@@ -13,12 +13,14 @@ contains
     real(c_float),pointer::input(:)
     real,allocatable,dimension(:)::buf
     integer::len,i,i1
+    logical::flag
 
     call c_f_pointer(bp(mt), input, SHAPE=[4410])
 
     allocate(buf(len))
 
-    msc%synth%slc=.true.
+    msc%synth%slc=.false.
+    flag = .false.
     do
        do i = 1, 50
           input(:) = 0
@@ -28,23 +30,50 @@ contains
           call sound_write(mt)
        end do
     
-       call buf_fill(msc)
+       call music_generate(msc)
+
+       
        
     end do
   end subroutine play
 
-  subroutine buf_fill(msc)
+  subroutine music_generate(msc)
     type(music),intent(inout)::msc
 
     integer::i, i1
 
     do i = 1, size(msc%synth)
-
-       do i1 = 1, 220500
-          msc%synth(i)%buffer(i1) = osc_sin(440.0 * (i1 / 44100.0))
-       end do
+       call fill_buffer(msc%synth(i))
     end do
-  end subroutine buf_fill
+  end subroutine music_generate
     
+  subroutine fill_buffer(set)
+    type(setting)::set
 
+    character(len=80)::line
+    integer::unit_num, iostat_value, scpos, ophead, optail
+    integer::i
+
+    set%buffer(:) = 0
+    do
+       read(unit_num, '(A:)', iostat=iostat_value) line
+       do i = 1, len(line)
+          if (line(i:i) == char(9)) line(i:i) = ' '
+       end do
+
+       if(iostat_value /= 0)then
+          
+          exit
+       end if
+
+       scpos = index(line, ';')
+       if(scpos == 0) cycle
+
+       ! optail = 1
+       ! call get_token(l
+
+       print *, line
+    end do
+
+  end subroutine fill_buffer
 end module sound_generate

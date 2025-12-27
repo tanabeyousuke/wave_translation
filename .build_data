@@ -1,10 +1,10 @@
 section basicdata
 name:wt
-link:gfortran -o <name> <obj> $(sdl2-config --cflags --libs) -lm -O3 -march=native
+link:gfortran -o <name> <obj> $(sdl2-config --cflags --libs) 
 end section basicdata
 
 
 section assemble
-f90:src/fortran:gfortran -c <src> -o <obj>
-c:src/c:gcc -c <src> 
+f90:src/fortran:gfortran -c <src> -o <obj> -lm -O3 -march=native
+c:src/c:gcc -c <src> -lm -O3 -march=native
 end section assemble
