@@ -38,11 +38,10 @@ contains
 
     integer::i, i1
 
-    print *, "fill"
     do i = 1, size(msc%synth)
 
        do i1 = 1, 220500
-          msc%synth(i)%buffer(i1) = osc_sin(440.0 * (i1 / 44100.0)) * 0.8
+          msc%synth(i)%buffer(i1) = osc_sin(440.0 * (i1 / 44100.0))
        end do
     end do
   end subroutine buf_fill

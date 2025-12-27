@@ -7,7 +7,13 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      
      logical::rorv
   end type param
-  
+
+  type::voice
+     logical::play
+     integer::count
+     logical::push
+  end type voice
+
   type::lfo
      integer::form !波形
      type(param)::p(4) !周波数、振幅、オフセット、出力
@@ -26,9 +32,12 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      type(effect),allocatable::efc(:) !エフェクト 
      integer::lfo_num
      integer::efc_num
-     
+     integer::vce_num
+
      type(param)::amp
 
+     type(voice),allocatable::vce(:)
+     
      integer::unit_num 
      real::buffer(220500)
      integer::space
@@ -119,6 +128,11 @@ contains
           call get_token(line, ophead, optail, scpos)
 
           read(line(ophead:optail), *) set%efc_num
+       case("vce")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+
+          read(line(ophead:optail), *) set%efc_num
        end select
     end do
   end subroutine module_num_setting
@@ -137,6 +151,7 @@ contains
 
     allocate(set%lfo(set%lfo_num))
     allocate(set%efc(set%efc_num))
+    allocate(set%vce(set%vce_num))
     lfo_num = 0
     efc_num = 0
 
