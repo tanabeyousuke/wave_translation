@@ -10,9 +10,10 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
 
   type::voice
      logical::play
+     logical::push
      integer::count
      integer::pn
-     logical::push
+     integer::oct
   end type voice
 
   type::lfo
@@ -41,7 +42,10 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      
      integer::unit_num 
      real::buffer(220500)
+     real::reg(64)
      integer::space
+     integer::rest
+     logical::writed
      logical::slc
 
   end type setting

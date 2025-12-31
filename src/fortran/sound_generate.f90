@@ -31,8 +31,6 @@ contains
        end do
     
        call music_generate(msc)
-
-       
        
     end do
   end subroutine play
@@ -51,29 +49,146 @@ contains
     type(setting)::set
 
     character(len=80)::line
-    integer::unit_num, iostat_value, scpos, ophead, optail
-    integer::i
+    character(len=5)::operate
+    integer::unit_num, iostat_value, scpos, endpos, ophead, optail
+    integer::i, space, rgx(5)
 
+    unit_num = set%unit_num
     set%buffer(:) = 0
+
+    set%writed = .false.
+    set%space = 0
     do
+       if(set%rest /= 0)then
+          call rest(set)
+       end if
+
+      if(set%writed .eqv. .true.)then
+         exit
+      end if
+
        read(unit_num, '(A:)', iostat=iostat_value) line
+       endpos = index(line, "end:")
+       if(iostat_value /= 0 .or. endpos /= 0)then
+          set%slc = .true.
+          exit
+       end if
+
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
        end do
 
-       if(iostat_value /= 0)then
-          
-          exit
-       end if
-
        scpos = index(line, ';')
        if(scpos == 0) cycle
 
-       ! optail = 1
-       ! call get_token(l
+       optail = 1
+       call get_token(line, ophead, optail, scpos)
+       operate = line(ophead:optail)
+       
+       select case(trim(operate))
+       case("mov")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+          read(operate(2:4), *) rgx(1)
 
-       print *, line
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+          print *, operate
+          read(operate, *) set%reg(rgx(1))
+
+       case("kon")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+
+          read(operate, *) rgx(1)
+
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+
+          select case(operate)
+          case("c")
+             rgx(2) = -9
+          case("cis")
+             rgx(2) = -8
+          case("d")
+             rgx(2) = -7
+          case("dis")
+             rgx(2) = -6
+          case("e")
+             rgx(2) = -5
+          case("f")
+             rgx(2) = -4
+          case("fis")
+             rgx(2) = -3
+          case("g")
+             rgx(2) = -2
+          case("gis")
+             rgx(2) = -1
+          case("a")
+             rgx(2) = 0
+          case("ais")
+             rgx(2) = 1
+          case("h")
+             rgx(2) = 2
+          end select
+
+          set%vce(rgx(1))%pn = rgx(2)
+
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+          
+          read(operate, *) set%vce(rgx(1))%oct
+          
+          set%vce(rgx(1))%count = 0
+          set%vce(rgx(1))%play = .true.
+          set%vce(rgx(1))%push = .true.
+          
+       case("kof")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+
+          read(operate, *) rgx(1)
+
+          set%vce(rgx(1))%push = .false.
+
+       case("rst")
+          
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+
+          read(operate, *) rgx(1)
+          set%rest = rgx(1)
+      end select
+
     end do
 
   end subroutine fill_buffer
+
+  subroutine rest(set)
+    type(setting),intent(inout)::set
+
+    integer::i, i1, i2
+    real::data
+    real,allocatable::f(:)
+    
+    allocate(f(set%vce_num))
+
+    do i1 = 1, set%vce_num
+       
+    end do
+
+    do i = 1, set%rest
+       
+    end do
+
+
+  end subroutine rest
+  
 end module sound_generate

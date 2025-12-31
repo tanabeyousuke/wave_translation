@@ -24,4 +24,9 @@ setting:
 play:
   mov r10 1.0; !レジスタへの代入
   
-  kon 1 dis;
+  kon 1 dis 4;
+
+  rst 22050;
+
+  kof 1;
+end:
