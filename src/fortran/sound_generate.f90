@@ -175,19 +175,32 @@ contains
     type(setting),intent(inout)::set
 
     integer::i, i1, i2
-    real::data
+    real::data,rrgx(5)
+    logical::ext
     real,allocatable::f(:)
     
     allocate(f(set%vce_num))
 
-    do i1 = 1, set%vce_num
-       
+    do i = 1, set%vce_num
+       rrgx(1) = 440.0 * 2 ** (set%oct - 4)
+       f(i) = rrgx(1) * 2 ** set%pn
     end do
+    
+    exit = .false.
 
-    do i = 1, set%rest
-       
+    do i = 1, set%vce_num
+       do i1 = 1, set%rest
+          if(rest == 0 .or. space == 0) then
+             ext = .true.
+             if(space == 0) set%writed = .true.
+             exit
+          end if
+          
+
+       end do
+
+       if (ext .eqv. .true.) exit
     end do
-
 
   end subroutine rest
   
