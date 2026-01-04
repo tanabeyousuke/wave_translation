@@ -137,7 +137,7 @@ contains
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
 
-          read(line(ophead:optail), *) set%efc_num
+          read(line(ophead:optail), *) set%vce_num
        end select
     end do
   end subroutine module_num_setting
@@ -319,6 +319,13 @@ contains
           call num_reg(operate, set%amp) 
        end select
     end do
+    
+    set%buffer(:) = 0
+    set%reg(:) = 0
+    set%space = 44100
+    set%rest = 0
+    set%writed = .false.
+    set%slc = .false.
   end subroutine synth_setting
   
   subroutine execute(filename, unit_num)

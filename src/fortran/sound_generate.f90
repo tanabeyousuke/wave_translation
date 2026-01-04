@@ -57,12 +57,8 @@ contains
     set%buffer(:) = 0
 
     set%writed = .false.
-    set%space = 0
+    set%space = 44100
     do
-       if(set%rest /= 0)then
-          call rest(set)
-       end if
-
       if(set%writed .eqv. .true.)then
          exit
       end if
@@ -72,6 +68,10 @@ contains
        if(iostat_value /= 0 .or. endpos /= 0)then
           set%slc = .true.
           exit
+       end if
+
+       if(set%rest /= 0)then
+          call rest(set)
        end if
 
        do i = 1, len(line)
@@ -147,7 +147,7 @@ contains
           set%vce(rgx(1))%count = 0
           set%vce(rgx(1))%play = .true.
           set%vce(rgx(1))%push = .true.
-          
+
        case("kof")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
@@ -174,34 +174,65 @@ contains
   subroutine rest(set)
     type(setting),intent(inout)::set
 
-    integer::i, i1, i2
+    integer::i, i1, leng, seek
     real::data,rrgx(5)
     logical::ext
     real,allocatable::f(:)
     
     allocate(f(set%vce_num))
+    print *, "a"
 
     do i = 1, set%vce_num
-       rrgx(1) = 440.0 * 2 ** (set%oct - 4)
-       f(i) = rrgx(1) * 2 ** set%pn
+       rrgx(1) = 440.0 * 2 ** (set%vce(i)%oct - 4)
+       f(i) = rrgx(1) * 2 ** set%vce(i)%pn
     end do
     
-    exit = .false.
+    ext = .false.
+    
+    if(set%rest < set%space)then
+       leng = set%rest
+    else
+       leng = set%space
+       set%writed = .true.
+    end if
+    
+seek = 220500 - set%space
 
     do i = 1, set%vce_num
-       do i1 = 1, set%rest
-          if(rest == 0 .or. space == 0) then
-             ext = .true.
-             if(space == 0) set%writed = .true.
-             exit
+       ! 各ボイスごとに書き込み開始位置をリセット
+       seek = 220500 - set%space 
+       
+       do i1 = 1, leng
+          ! 3. 境界チェック（配列サイズを越えないように）
+          if (seek >= 1 .and. seek <= 220500) then
+             
+             ! 4. インデックスを i に修正、かつ実数計算(44100.0)にする
+             rrgx(1) = osc_sin(f(i) * (set%vce(i)%count / 44100.0)) * reg_value(set, set%osc_g(1))
+             ! ... (rrgx(2)〜(5)も同様に i1 ではなく i を使用) ...
+             
+             set%buffer(seek) = set%buffer(seek) + sum(rrgx)
           end if
           
-
+          seek = seek + 1
+          set%vce(i)%count = set%vce(i)%count + 1
        end do
-
-       if (ext .eqv. .true.) exit
     end do
 
+    set%rest = set%rest - leng
+    set%space = set%space - leng
+    if (allocated(f)) deallocate(f)
   end subroutine rest
+
+  function reg_value(set, p)
+    type(setting), intent(in)::set
+    type(param), intent(in)::p
+    real::reg_value
+    
+    if(p%rorv .eqv. .true.)then
+       reg_value = set%reg(p%reg_num)
+    else
+       reg_value = p%value
+    end if
+  end function reg_value
   
 end module sound_generate

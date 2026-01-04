@@ -8,37 +8,22 @@ contains
     osc_sin = sin((2 * 3.14159265) * (x - aint(x)))
   end function osc_sin
 
-  function osc_delta(x)
+  function osc_del(x)
     real, intent(in)::x
-    real osc_delta
+    real osc_del
 
     real i
     
     i = x - aint(x)
 
     if(i < 0.25)then
-       osc_delta = 4 * i
+       osc_del = 4 * i
     else if(i < 0.75) then
-       osc_delta = -4 * i + 2
+       osc_del = -4 * i + 2
     else
-       osc_delta = 4 * i - 4
+       osc_del = 4 * i - 4
     end if
-  end function osc_delta
-  
-  function osc_square(x)
-    real, intent(in)::x
-    real osc_square
-
-    real i
-
-    i = x - aint(x)
-
-    if(i < 0.5)then
-       osc_square = 1
-    else
-       osc_square = -1
-    end if
-  end function osc_square
+  end function osc_del
 
   function osc_saw(x)
     real, intent(in)::x
@@ -50,4 +35,20 @@ contains
 
     osc_saw = i * 2 - 1
   end function osc_saw
+  
+  function osc_sqr(x)
+    real, intent(in)::x
+    real osc_sqr
+
+    real i
+
+    i = x - aint(x)
+
+    if(i < 0.5)then
+       osc_sqr = 1
+    else
+       osc_sqr = -1
+    end if
+  end function osc_sqr
+
 end module osc
