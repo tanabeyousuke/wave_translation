@@ -12,6 +12,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      logical::play
      logical::push
      integer::count
+     integer::time
      integer::pn
      integer::oct
   end type voice
@@ -34,18 +35,17 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      type(effect),allocatable::efc(:) !エフェクト 
      integer::lfo_num
      integer::efc_num
-     integer::vce_num
 
      type(param)::amp
 
-     type(voice),allocatable::vce(:)
+     type(voice)::vce
      
      integer::unit_num 
      real::buffer(220500)
      real::reg(64)
-     integer::space
+     integer::writed
      integer::rest
-     logical::writed
+     logical::ready
      logical::slc
 
   end type setting
@@ -133,11 +133,6 @@ contains
           call get_token(line, ophead, optail, scpos)
 
           read(line(ophead:optail), *) set%efc_num
-       case("vce")
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-
-          read(line(ophead:optail), *) set%vce_num
        end select
     end do
   end subroutine module_num_setting
@@ -156,7 +151,6 @@ contains
 
     allocate(set%lfo(set%lfo_num))
     allocate(set%efc(set%efc_num))
-    allocate(set%vce(set%vce_num))
     lfo_num = 0
     efc_num = 0
 
@@ -322,10 +316,11 @@ contains
     
     set%buffer(:) = 0
     set%reg(:) = 0
-    set%space = 44100
+    set%writed = 0
     set%rest = 0
-    set%writed = .false.
+    set%ready = .false.
     set%slc = .false.
+
   end subroutine synth_setting
   
   subroutine execute(filename, unit_num)

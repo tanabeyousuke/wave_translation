@@ -46,7 +46,7 @@ contains
   end subroutine music_generate
     
   subroutine fill_buffer(set)
-    type(setting)::set
+    type(setting),intent(inout)::set
 
     character(len=80)::line
     character(len=5)::operate
@@ -56,12 +56,16 @@ contains
     unit_num = set%unit_num
     set%buffer(:) = 0
 
-    set%writed = .false.
-    set%space = 44100
+    set%ready = .false.
+    set%writed = 0
+    
     do
-      if(set%writed .eqv. .true.)then
-         exit
-      end if
+       if(set%vce%time < set%vce%count) then
+          call write_buffer(set)
+          cycle
+       end if
+
+       if(set%ready .eqv. .true.) exit
 
        read(unit_num, '(A:)', iostat=iostat_value) line
        endpos = index(line, "end:")
@@ -70,9 +74,6 @@ contains
           exit
        end if
 
-       if(set%rest /= 0)then
-          call rest(set)
-       end if
 
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
@@ -98,13 +99,7 @@ contains
           print *, operate
           read(operate, *) set%reg(rgx(1))
 
-       case("kon")
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-          operate = trim(line(ophead:optail))
-
-          read(operate, *) rgx(1)
-
+       case("key")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = trim(line(ophead:optail))
@@ -136,103 +131,80 @@ contains
              rgx(2) = 2
           end select
 
-          set%vce(rgx(1))%pn = rgx(2)
+          set%vce%pn = rgx(2)
 
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = trim(line(ophead:optail))
           
-          read(operate, *) set%vce(rgx(1))%oct
-          
-          set%vce(rgx(1))%count = 0
-          set%vce(rgx(1))%play = .true.
-          set%vce(rgx(1))%push = .true.
+          read(operate, *) set%vce%oct
 
-       case("kof")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = trim(line(ophead:optail))
 
           read(operate, *) rgx(1)
-
-          set%vce(rgx(1))%push = .false.
-
-       case("rst")
           
-          optail = optail + 1
-          call get_token(line, ophead, optail, scpos)
-          operate = trim(line(ophead:optail))
+          set%vce%count = rgx(1)
+          set%vce%time = 0
+          set%vce%play = .true.
+          set%vce%push = .true.
 
-          read(operate, *) rgx(1)
-          set%rest = rgx(1)
       end select
 
     end do
 
   end subroutine fill_buffer
 
-  subroutine rest(set)
+  subroutine write_buffer(set)
     type(setting),intent(inout)::set
 
-    integer::i, i1, leng, seek
-    real::data,rrgx(5)
-    logical::ext
-    real,allocatable::f(:)
+    integer::i,leng, space, count, pos, n
+    real::f, signal(5)
     
-    allocate(f(set%vce_num))
-    print *, "a"
+    n = (set%vce%pn) + (set%vce%oct - 4) * 12 
+    f = 440.0 * (2**(n/12.0))
 
-    do i = 1, set%vce_num
-       rrgx(1) = 440.0 * 2 ** (set%vce(i)%oct - 4)
-       f(i) = rrgx(1) * 2 ** set%vce(i)%pn
-    end do
+    space = 220500 - set%writed
     
-    ext = .false.
-    
-    if(set%rest < set%space)then
-       leng = set%rest
+    if(space < set%vce%count)then
+       leng = space
     else
-       leng = set%space
-       set%writed = .true.
+       leng = set%vce%count
+    end if
+
+    do i = 1, leng
+       pos = set%writed + i
+       count = set%vce%count + i
+
+       signal(1) = osc_sin(f * (count / 44100.0)) * data_real(set, set%osc_g(1))
+       signal(2) = osc_del(f * (count / 44100.0)) * data_real(set, set%osc_g(2))
+       signal(3) = osc_saw(f * (count / 44100.0)) * data_real(set, set%osc_g(3))
+       signal(4) = osc_sqr(f * (count / 44100.0)) * data_real(set, set%osc_g(4))
+       
+       set%buffer(pos) = sum(signal(1:4))
+       
+    end do
+    set%vce%time = set%vce%time + leng
+
+    set%writed = set%writed + leng
+
+    if(set%writed == 220500) then
+       set%ready = .true.
     end if
     
-seek = 220500 - set%space
+  end subroutine write_buffer
 
-    do i = 1, set%vce_num
-       ! 各ボイスごとに書き込み開始位置をリセット
-       seek = 220500 - set%space 
-       
-       do i1 = 1, leng
-          ! 3. 境界チェック（配列サイズを越えないように）
-          if (seek >= 1 .and. seek <= 220500) then
-             
-             ! 4. インデックスを i に修正、かつ実数計算(44100.0)にする
-             rrgx(1) = osc_sin(f(i) * (set%vce(i)%count / 44100.0)) * reg_value(set, set%osc_g(1))
-             ! ... (rrgx(2)〜(5)も同様に i1 ではなく i を使用) ...
-             
-             set%buffer(seek) = set%buffer(seek) + sum(rrgx)
-          end if
-          
-          seek = seek + 1
-          set%vce(i)%count = set%vce(i)%count + 1
-       end do
-    end do
-
-    set%rest = set%rest - leng
-    set%space = set%space - leng
-    if (allocated(f)) deallocate(f)
-  end subroutine rest
-
-  function reg_value(set, p)
-    type(setting), intent(in)::set
-    type(param), intent(in)::p
-    real::reg_value
+  function data_real(set, p)
+    type(setting),intent(in)::set
+    type(param),intent(in)::p
+    real::data_real
     
     if(p%rorv .eqv. .true.)then
-       reg_value = set%reg(p%reg_num)
+       data_real = set%reg(p%reg_num)
     else
-       reg_value = p%value
+       data_real = p%value
     end if
-  end function reg_value
-  
+  end function data_real
+
 end module sound_generate

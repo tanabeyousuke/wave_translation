@@ -1,7 +1,6 @@
 module_num: !特定ユニットの数
   	    lfo 1; !lfoの個数
   	    efc 3; !エフェクトの個数
-	    vce 3; !同時発音数
 
 setting:
   osc sin 30; !オシレータの音量
@@ -24,9 +23,6 @@ setting:
 play:
   mov r10 1.0; !レジスタへの代入
   
-  kon 1 dis 4;
+  key c 4 22050;
 
-  rst 22050;
-
-  kof 1;
 end:
