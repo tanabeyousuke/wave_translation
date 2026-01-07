@@ -12,15 +12,20 @@ contains
 
     real(c_float),pointer::input(:)
     real,allocatable,dimension(:)::buf
-    integer::len,i,i1
-    logical::flag
+    integer::len,flag,i,i1
+    real::dummy(4410)
 
     call c_f_pointer(bp(mt), input, SHAPE=[4410])
 
     allocate(buf(len))
 
+    dummy = 0
+    do i = 1, 10
+       input = dummy
+       sound_write(mt)
+    end do
+    
     msc%synth%slc=.false.
-    flag = .false.
     do
        do i = 1, 50
           input(:) = 0
@@ -29,9 +34,13 @@ contains
           end do
           call sound_write(mt)
        end do
-    
-       call music_generate(msc)
-       
+
+       if(all(msc%synth%slc))then
+          exit
+       else
+          call music_generate(msc)
+       end if
+
     end do
   end subroutine play
 
@@ -177,10 +186,10 @@ contains
        pos = set%writed + i
        count = set%vce%count + i
 
-       signal(1) = osc_sin(f * (count / 44100.0)) * data_real(set, set%osc_g(1))
-       signal(2) = osc_del(f * (count / 44100.0)) * data_real(set, set%osc_g(2))
-       signal(3) = osc_saw(f * (count / 44100.0)) * data_real(set, set%osc_g(3))
-       signal(4) = osc_sqr(f * (count / 44100.0)) * data_real(set, set%osc_g(4))
+       signal(1) = osc_sin(f * (count / 44100.0)) * data_real(set, set%osc_g(1)) / 100
+       signal(2) = osc_del(f * (count / 44100.0)) * data_real(set, set%osc_g(2)) / 100
+       signal(3) = osc_saw(f * (count / 44100.0)) * data_real(set, set%osc_g(3)) / 100
+       signal(4) = osc_sqr(f * (count / 44100.0)) * data_real(set, set%osc_g(4)) / 100
        
        set%buffer(pos) = sum(signal(1:4))
        

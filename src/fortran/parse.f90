@@ -7,7 +7,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      
      logical::rorv
   end type param
-
+  
   type::voice
      logical::play
      logical::push
@@ -16,7 +16,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      integer::pn
      integer::oct
   end type voice
-
+  
   type::lfo
      integer::form !波形
      type(param)::p(4) !周波数、振幅、オフセット、出力
@@ -27,7 +27,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      type(param)::p(5)
      real,allocatable::array(:)
   end type effect
-  
+
   type::setting
      type(param)::osc_g(5) !オシレータのゲイン 1から順にsin、三角、矩形、鋸、ノイズ
      type(param)::env(5) !エンベロープのパラメータ 1から順にatk,dec,sus,rel,出力
@@ -39,7 +39,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      type(param)::amp
 
      type(voice)::vce
-     
+
      integer::unit_num 
      real::buffer(220500)
      real::reg(64)
@@ -53,7 +53,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   type music
      type(setting), allocatable::synth(:)
   end type music
-  
+
 contains
   subroutine num_reg(op, p)!レジスタ番号を実数に直します。
     character(*), intent(in)::op
@@ -67,12 +67,12 @@ contains
        p%rorv = .false.
     end if
   end subroutine num_reg
- 
+
   subroutine get_token(line, head, tail, scpos) !スペースで囲まれた部分の先端と後端を取り出します。実際の使い方は下に
     character(len=80),intent(in)::line
     integer,intent(in)::scpos
     integer,intent(inout)::head, tail
-    
+
     integer ophead, optail, i
 
     do i = tail, scpos
@@ -81,11 +81,11 @@ contains
           exit
        end if
     end do
-    
+
     do i = ophead + 1, scpos
        if(line(i:i) == ' ' .or. line(i:i) == ';') then
           optail = i - 1
-          
+
           exit
        end if
     end do
@@ -103,23 +103,23 @@ contains
     integer iostat_value, scpos, setpos, ophead, optail
     integer i, ro, rgx(10)
     logical lrgx(5)
-    
+
     do
        read(unit_num, '(A:)', iostat=iostat_value) line
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
        end do
-       
+
        setpos = index(line, "setting:")
        if(setpos /= 0) exit
-       
+
        scpos = index(line, ';')
        if(scpos == 0) cycle
-       
+
 
        optail = 1
        call get_token(line, ophead, optail, scpos)
-       
+
        operate = trim(line(ophead:optail))
 
        select case(operate)
@@ -136,11 +136,11 @@ contains
        end select
     end do
   end subroutine module_num_setting
-  
+
   subroutine synth_setting(unit_num, set)
     integer, intent(in)::unit_num
     type(setting), intent(inout)::set
-    
+
     character(len=80) line
     character(len=5) operate
     integer iostat_value, scpos, playpos, ophead, optail
@@ -163,31 +163,31 @@ contains
        set%env(i)%value = 0
        set%env(i)%rorv = .false.
     end do
-      
-    
+
+
     do
        read(unit_num, '(A:)', iostat=iostat_value)line
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
        end do
-       
+
        playpos = index(line, "play:")
        if(playpos /= 0) exit
-       
+
        scpos = index(line, ';')
        if(scpos == 0) cycle
-       
+
        lrgx(2) = .false.
-       
+
        optail = 1
        call get_token(line, ophead, optail, scpos)
        operate = line(ophead:optail)
-       
+
        select case(trim(operate))
        case("osc")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
-          
+
           operate = trim(line(ophead:optail))
           select case(operate)
           case("sin")
@@ -210,7 +210,7 @@ contains
        case("env")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
-          
+
           operate = trim(line(ophead:optail))
 
           select case(operate)
@@ -232,13 +232,13 @@ contains
           operate = trim(line(ophead:optail))
 
           call num_reg(operate, set%env(rgx(1)))
-           
+
        case("lfo")
           lfo_num = lfo_num + 1
 
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
-          
+
           operate = trim(line(ophead:optail))
 
           select case(operate)
@@ -253,7 +253,7 @@ contains
           case("rnd")
              rgx(1) = 5
           end select
-          
+
           set%lfo(lfo_num)%form = rgx(1)
 
           do i = 1, 3
@@ -309,11 +309,11 @@ contains
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = line(ophead:optail)
-          
+
           call num_reg(operate, set%amp) 
        end select
     end do
-    
+
     set%buffer(:) = 0
     set%reg(:) = 0
     set%writed = 0
@@ -322,7 +322,7 @@ contains
     set%slc = .false.
 
   end subroutine synth_setting
-  
+
   subroutine execute(filename, unit_num)
     character(*),intent(in)::filename
     integer unit_num
@@ -345,13 +345,13 @@ contains
 
        modpos = index(line, "module_num:")
        if(modpos /= 0) exit
-       
+
     end do
-    
+
     call module_num_setting(unit_num, set)
 
     call synth_setting(unit_num, set)
-    
+
     close(unit_num)
 
   end subroutine execute
@@ -372,31 +372,23 @@ contains
     read(unit_num, '(A:)', iostat=iostat_value) line
     read(line, *) num
     allocate(m%synth(num))
-    
+
     do i = 1, num
        read(unit_num, '(A:)', iostat=iostat_value) line
-       
+
        synth_unit_num = 10 + i
        open(unit=synth_unit_num, file=line, status='OLD', iostat=synth_iostat_value)
        if(iostat_value /= 0)then
           print *, "error: ", line, "open_failed"
           stop
        end if
-       
+
        m%synth(i)%unit_num = synth_unit_num
 
        call module_num_setting(m%synth(i)%unit_num, m%synth(i))
        call synth_setting(m%synth(i)%unit_num, m%synth(i))
-       
+
     end do
   end subroutine setup_music
-  
-  subroutine next_notes_read(set, array)
-    type(setting),intent(inout)::set
-    real,allocatable,intent(inout)::array(:)
-
-    
-
-  end subroutine next_notes_read
 
 end module parse

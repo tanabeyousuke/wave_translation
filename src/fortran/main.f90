@@ -7,19 +7,18 @@ program main
   implicit none
 
   type(music)::music_data
-  type(c_ptr) mt
-  type(c_ptr) event
-  type(c_ptr) bufp
+  type(c_ptr)::mt
+  type(c_ptr)::event
+  type(c_ptr)::bufp
   
-  integer i
-  real ro
+  integer::i
+  real::ro
 
   mt = system_setup()
   bufp = bp(mt)
 
   call setup_music("tamabashi.msc", music_data)
 
-  call music_generate(music_data)
 
   call sound_start(mt)
   call play(mt, music_data)

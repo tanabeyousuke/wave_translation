@@ -3,8 +3,7 @@ module_num: !特定ユニットの数
   	    efc 3; !エフェクトの個数
 
 setting:
-  osc sin 30; !オシレータの音量
-  osc del 30;
+  osc sqr 100;
 
   env atk r5;
   env dec r6;
@@ -22,7 +21,9 @@ setting:
 
 play:
   mov r10 1.0; !レジスタへの代入
-  
+ 
   key c 4 22050;
+  key cis 4 22050;
+  key d 4 22050;
 
 end:
