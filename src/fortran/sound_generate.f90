@@ -22,7 +22,7 @@ contains
     dummy = 0
     do i = 1, 10
        input = dummy
-       sound_write(mt)
+       call sound_write(mt)
     end do
     
     msc%synth%slc=.false.
@@ -69,7 +69,7 @@ contains
     set%writed = 0
     
     do
-       if(set%vce%time < set%vce%count) then
+       if(set%vce%play .eqv. .true.) then
           call write_buffer(set)
           cycle
        end if
@@ -105,7 +105,6 @@ contains
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
           operate = trim(line(ophead:optail))
-          print *, operate
           read(operate, *) set%reg(rgx(1))
 
        case("key")
@@ -159,7 +158,19 @@ contains
           set%vce%play = .true.
           set%vce%push = .true.
 
-      end select
+       case("rst")
+          
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+
+          read(operate, *) rgx(1)
+          
+          set%vce%count = set%vce%time + rgx(1)
+          set%vce%play = .true.
+          set%vce%push = .false.
+          
+       end select
 
     end do
 
@@ -169,7 +180,7 @@ contains
     type(setting),intent(inout)::set
 
     integer::i,leng, space, count, pos, n
-    real::f, signal(5)
+    real::f, signal(5), prm_wav, out
     
     n = (set%vce%pn) + (set%vce%oct - 4) * 12 
     f = 440.0 * (2**(n/12.0))
@@ -179,9 +190,11 @@ contains
     if(space < set%vce%count)then
        leng = space
     else
-       leng = set%vce%count
+       leng = set%vce%count - set%vce%time
     end if
-
+    
+    print *, set%vce%time
+    
     do i = 1, leng
        pos = set%writed + i
        count = set%vce%count + i
@@ -190,8 +203,13 @@ contains
        signal(2) = osc_del(f * (count / 44100.0)) * data_real(set, set%osc_g(2)) / 100
        signal(3) = osc_saw(f * (count / 44100.0)) * data_real(set, set%osc_g(3)) / 100
        signal(4) = osc_sqr(f * (count / 44100.0)) * data_real(set, set%osc_g(4)) / 100
+       signal(5) = osc_rnd() * data_real(set, set%osc_g(5)) / 100
+
+       prm_wav = sum(signal) 
        
-       set%buffer(pos) = sum(signal(1:4))
+       out = prm_wav * data_real(set, set%amp) / 100
+
+       set%buffer(pos) = out
        
     end do
     set%vce%time = set%vce%time + leng
@@ -200,8 +218,10 @@ contains
 
     if(set%writed == 220500) then
        set%ready = .true.
+    else
+       set%vce%play = .false.
     end if
-    
+
   end subroutine write_buffer
 
   function data_real(set, p)

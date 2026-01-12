@@ -51,4 +51,12 @@ contains
     end if
   end function osc_sqr
 
+  function osc_rnd()
+    real::osc_rnd
+    real i
+
+    call random_number(i)
+    osc_rnd = (i * 2.0) - 1.0
+  end function osc_rnd
+
 end module osc
