@@ -17,6 +17,7 @@ contains
 
     call c_f_pointer(bp(mt), input, SHAPE=[4410])
 
+    len = 220500
     allocate(buf(len))
 
     dummy = 0
@@ -179,8 +180,8 @@ contains
   subroutine write_buffer(set)
     type(setting),intent(inout)::set
 
-    integer::i,leng, space, count, pos, n
-    real::f, signal(5), prm_wav, out
+    integer::i, i1, leng, space, time, pos, n
+    real::f, signal(5), prm_wav, out, env(4)
     
     n = (set%vce%pn) + (set%vce%oct - 4) * 12 
     f = 440.0 * (2**(n/12.0))
@@ -193,19 +194,21 @@ contains
        leng = set%vce%count - set%vce%time
     end if
     
-    print *, set%vce%time
-    
     do i = 1, leng
        pos = set%writed + i
-       count = set%vce%count + i
+       time = set%vce%time + i
 
-       signal(1) = osc_sin(f * (count / 44100.0)) * data_real(set, set%osc_g(1)) / 100
-       signal(2) = osc_del(f * (count / 44100.0)) * data_real(set, set%osc_g(2)) / 100
-       signal(3) = osc_saw(f * (count / 44100.0)) * data_real(set, set%osc_g(3)) / 100
-       signal(4) = osc_sqr(f * (count / 44100.0)) * data_real(set, set%osc_g(4)) / 100
+       signal(1) = osc_sin(f * (time / 44100.0)) * data_real(set, set%osc_g(1)) / 100
+       signal(2) = osc_del(f * (time / 44100.0)) * data_real(set, set%osc_g(2)) / 100
+       signal(3) = osc_saw(f * (time / 44100.0)) * data_real(set, set%osc_g(3)) / 100
+       signal(4) = osc_sqr(f * (time / 44100.0)) * data_real(set, set%osc_g(4)) / 100
        signal(5) = osc_rnd() * data_real(set, set%osc_g(5)) / 100
 
-       prm_wav = sum(signal) 
+       do i1 = 1, 4 
+          env(i1) = data_real(set, set%env(i1))
+       end do
+
+       prm_wav = sum(signal) * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push)
        
        out = prm_wav * data_real(set, set%amp) / 100
 
@@ -220,6 +223,7 @@ contains
        set%ready = .true.
     else
        set%vce%play = .false.
+       set%vce%last = time
     end if
 
   end subroutine write_buffer

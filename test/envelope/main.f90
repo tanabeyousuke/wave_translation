@@ -2,18 +2,21 @@ program main
   use env
   implicit none
 
-  type(env_data) data
-  integer i, push
+  integer::i
+  real::atk, dec, sus, rel
 
-  data%atk = 50
-  data%dec = 20
-  data%sus = 40
-  data%rel = 50
 
-  push = 250
-  
-  do i = 1, 1000
-     print *, env_out(data, i, push)
+  atk = 10.0
+  dec = 10.0
+  sus = 0.4
+  rel = 10.0
+
+  do i = 1, 30
+     print *, env_out(atk, dec, sus, rel, i, 30, .true.)
+  end do
+
+  do i = 31, 50
+     print *, env_out(atk, dec, sus, rel, i, 30, .false.)
   end do
 
 end program main

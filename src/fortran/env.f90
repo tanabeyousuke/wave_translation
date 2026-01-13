@@ -9,25 +9,27 @@ contains
 
     real::env_out
 
-    real::m
+    real::m, x
     integer::count
 
     if(push .eqv. .false.) then
        count = time - last
        m = 0 - (sus / rel)
-       env_out = m * count + sus
+       x = m * count + sus
+       if (x < 0) x = 0
+       env_out = x
     else if(time < atk) then
        count = time
        m = 1 / atk
        env_out = m * count
     else if(time - atk < dec) then
        count = time - atk
-       m = 1 - ((1.0 - sus) / dec)
+       m = (sus - 1.0) / dec
        env_out = m * count + 1
     else
        env_out = sus
     end if
-
+    
   end function env_out
 
 end module env

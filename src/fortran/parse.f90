@@ -13,6 +13,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      logical::push
      integer::count
      integer::time
+     integer::last
      integer::pn
      integer::oct
   end type voice
@@ -30,7 +31,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
 
   type::setting
      type(param)::osc_g(5) !オシレータのゲイン 1から順にsin、三角、矩形、鋸、ノイズ
-     type(param)::env(5) !エンベロープのパラメータ 1から順にatk,dec,sus,rel,出力
+     type(param)::env(4) !エンベロープのパラメータ 1から順にatk,dec,sus,rel,出力
      type(lfo),allocatable::lfo(:) !ゲインにつなぐLFOのパラメータ 周波数、振幅、オフセット、出力
      type(effect),allocatable::efc(:) !エフェクト 
      integer::lfo_num
@@ -159,7 +160,7 @@ contains
        set%osc_g(i)%rorv = .false.
     end do
 
-    do i = 1, 5
+    do i = 1, 4
        set%env(i)%value = 0
        set%env(i)%rorv = .false.
     end do
@@ -222,8 +223,6 @@ contains
              rgx(1) = 3
           case("rel")
              rgx(1) = 4
-          case("out")
-             rgx(1) = 5
           end select
 
           optail = optail + 1
