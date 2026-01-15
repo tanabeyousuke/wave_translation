@@ -70,12 +70,14 @@ contains
     set%writed = 0
     
     do
+       if(set%ready .eqv. .true.) then
+          exit
+       end if
+
        if(set%vce%play .eqv. .true.) then
           call write_buffer(set)
           cycle
        end if
-
-       if(set%ready .eqv. .true.) exit
 
        read(unit_num, '(A:)', iostat=iostat_value) line
        endpos = index(line, "end:")
@@ -83,7 +85,6 @@ contains
           set%slc = .true.
           exit
        end if
-
 
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
@@ -182,18 +183,19 @@ contains
 
     integer::i, i1, leng, space, time, pos, n
     real::f, signal(5), prm_wav, out, env(4)
-    
+
     n = (set%vce%pn) + (set%vce%oct - 4) * 12 
     f = 440.0 * (2**(n/12.0))
 
     space = 220500 - set%writed
     
-    if(space < set%vce%count)then
+    if(space < set%vce%count - set%vce%time)then
        leng = space
     else
        leng = set%vce%count - set%vce%time
     end if
     
+
     do i = 1, leng
        pos = set%writed + i
        time = set%vce%time + i
@@ -218,6 +220,7 @@ contains
     set%vce%time = set%vce%time + leng
 
     set%writed = set%writed + leng
+
 
     if(set%writed == 220500) then
        set%ready = .true.
