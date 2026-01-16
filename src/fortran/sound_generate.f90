@@ -3,6 +3,7 @@ module sound_generate
   use env
   use osc
   use parse
+  use efc
   implicit none
 
 contains
@@ -194,7 +195,6 @@ contains
     else
        leng = set%vce%count - set%vce%time
     end if
-    
 
     do i = 1, leng
        pos = set%writed + i
@@ -212,6 +212,8 @@ contains
 
        prm_wav = sum(signal) * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push)
        
+       ! call efc_unit_pass(set%efc, set%reg, prm_wav, prm_wav)
+
        out = prm_wav * data_real(set, set%amp) / 100
 
        set%buffer(pos) = out

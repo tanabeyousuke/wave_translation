@@ -5,7 +5,7 @@ module_num: !特定ユニットの数
 setting:
   osc sin 100;
 
-  env atk 8820;
+  env atk 200;
   env dec 8820;
   env sus 0.5;
   env rel 22050;
@@ -20,15 +20,17 @@ setting:
 
 play:
   mov r5 30;
-  
 
-  key c 4 22040;
+  key g 4 22040;
   rst 22040;
 
-  key d 4 22050
-  rst 22050
+  key e 4 22050;
+  rst 22050;
   
-  key e 4 22050
-  rst 22050
+  key c 4 22050;
+  rst 22050;
+
+  key g 3 22050;
+  rst 22050;
 
 end:

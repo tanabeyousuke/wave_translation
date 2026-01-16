@@ -26,7 +26,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   type::effect
      integer::type
      type(param)::p(5)
-     real,allocatable::array(:)
+     real,allocatable::data(:)
   end type effect
 
   type::setting
@@ -271,14 +271,21 @@ contains
           operate = trim(line(ophead:optail))
 
           select case(operate)
-          case("low")
+          case("low") 
              rgx(1) = 1
+             allocate(set%efc(efc_num)%data(3))
+             set%efc(efc_num)%data = 0
           case("hig")
              rgx(1) = 2
+             allocate(set%efc(efc_num)%data(3))
+             set%efc(efc_num)%data = 0
           case("bnd")
              rgx(1) = 3
+             allocate(set%efc(efc_num)%data(3))
+             set%efc(efc_num)%data = 0
           case("dly")
              rgx(1) = 4
+             allocate(set%efc(efc_num)%data(2 + 66150))
           case("bit")
              rgx(1) = 5
           case("com")
@@ -354,6 +361,7 @@ contains
     close(unit_num)
 
   end subroutine execute
+  
   subroutine setup_music(filename, m)
     character(*),intent(in)::filename
     type(music),intent(inout)::m
