@@ -42,7 +42,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      type(voice)::vce
 
      integer::unit_num 
-     real::buffer(220500)
+     real::buffer(4410)
      real::reg(64)
      integer::writed
      integer::rest

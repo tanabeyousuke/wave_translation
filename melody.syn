@@ -1,6 +1,6 @@
 module_num: !特定ユニットの数
   	    lfo 1; !lfoの個数
-  	    efc 3; !エフェクトの個数
+  	    efc 0; !エフェクトの個数
 
 setting:
   osc sin 100;
@@ -12,9 +12,9 @@ setting:
 
   lfo sin r1 r9 r10; !波形、周波数、振幅、オフセット、出力 
 
-  efc low 3000 15; !エフェクト 入力数は種類によって異なる
-  efc hig 5000 20;
-  efc bit 15;
+  efc low 3000 15 !エフェクト 入力数は種類によって異なる
+  efc hig 5000 20
+  efc bit 15
   
   amp r5; !最終的にどれぐらいの大きさで音を出すか決めるアンプ
 

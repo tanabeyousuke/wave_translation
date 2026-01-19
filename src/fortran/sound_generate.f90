@@ -18,7 +18,7 @@ contains
 
     call c_f_pointer(bp(mt), input, SHAPE=[4410])
 
-    len = 220500
+    len = 44100
     allocate(buf(len))
 
     dummy = 0
@@ -29,13 +29,11 @@ contains
     
     msc%synth%slc=.false.
     do
-       do i = 1, 50
-          input(:) = 0
-          do i1 = 1, size(msc%synth)
-             input(:) = input(:) + msc%synth(i1)%buffer(((i - 1) * 4410) + 1:i * 4410) / size(msc%synth)
-          end do
-          call sound_write(mt)
+       input(:) = 0
+       do i1 = 1, size(msc%synth)
+          input(:) = input(:) + msc%synth(i1)%buffer / size(msc%synth)
        end do
+       call sound_write(mt)
 
        if(all(msc%synth%slc))then
           exit
@@ -183,12 +181,12 @@ contains
     type(setting),intent(inout)::set
 
     integer::i, i1, leng, space, time, pos, n
-    real::f, signal(5), prm_wav, out, env(4)
+    real::f, signal(5), prm_wav, effected_wav, out, env(4)
 
     n = (set%vce%pn) + (set%vce%oct - 4) * 12 
     f = 440.0 * (2**(n/12.0))
 
-    space = 220500 - set%writed
+    space = 4410 - set%writed
     
     if(space < set%vce%count - set%vce%time)then
        leng = space
@@ -212,9 +210,9 @@ contains
 
        prm_wav = sum(signal) * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push)
        
-       ! call efc_unit_pass(set%efc, set%reg, prm_wav, prm_wav)
+       call efc_unit_pass(set%efc, set%reg, prm_wav, effected_wav)
 
-       out = prm_wav * data_real(set, set%amp) / 100
+       out = effected_wav * data_real(set, set%amp) / 100
 
        set%buffer(pos) = out
        
@@ -224,7 +222,7 @@ contains
     set%writed = set%writed + leng
 
 
-    if(set%writed == 220500) then
+    if(set%writed == 4410) then
        set%ready = .true.
     else
        set%vce%play = .false.
