@@ -1,5 +1,6 @@
 module efc
   use parse
+  use osc
 
   implicit none
 
@@ -16,18 +17,67 @@ contains
     shield = in
     do i = 1, size(efc)
        select case(efc(i)%type)
-       case(1)
-          call svf(efc(i), reg, 1, shield, shield)
-       case(2)
-          call svf(efc(i), reg, 2, shield, shield)
-       case(3)
-          call svf(efc(i), reg, 3, shield, shield)
+       case(4)
+          call dly(efc(i), reg, shield)
+       case(7)
+          call hcl(efc(i), reg, shield)
+       case(8)
+          call scl(efc(i), reg, shield)
        end select
     end do
     out = shield
 
   end subroutine efc_unit_pass
 
+  subroutine dly(efc, reg, inout)
+    type(effect), intent(in)::efc
+    real, intent(in)::reg(64)
+    real, intent(inout)::inout
+
+    integer::reader,writer
+
+    writer = int(efc%data(66151)) + 1
+    if(writer > 66150) then
+       writer = writer - 66150
+    end if
+
+    reader = mod(int(data_real_a(reg, efc%p(1))))
+    
+    
+
+  end subroutine dly
+
+  subroutine hcl(efc, reg, inout)
+    type(effect), intent(in)::efc
+    real, intent(in)::reg(64)
+    real, intent(inout)::inout
+
+    real::amped
+    integer::mode
+
+    mode = int(data_real_a(reg, efc%p(1)))
+    amped = inout * data_real_a(reg, efc%p(2))
+
+    if(mode == 1)then
+       inout = max(-1.0, min(1.0, amped))
+    else if(mode == 2) then
+       inout = osc_del(amped)
+    end if
+  end subroutine hcl
+    
+  subroutine scl(efc, reg, inout)
+    type(effect), intent(in)::efc
+    real, intent(in)::reg(64)
+    real, intent(inout)::inout
+
+    real::amped
+
+    amped = inout * data_real_a(reg, efc%p(2))
+
+    inout = (2.0/3.14159265) * atan(inout)
+
+  end subroutine scl
+ 
   function data_real_a(reg, p)
     real, intent(in)::reg(64)
     type(param), intent(in)::p
@@ -40,23 +90,4 @@ contains
     end if
   end function data_real_a
   
-  subroutine svf_process(input, cutoff, q_res, low, band, high)
-    real, intent(in)  :: input, cutoff, q_res
-    real, intent(inout) :: low, band
-    real, intent(out) :: high
-    
-    real :: f, q
-    
-    ! パラメータの変換 (簡易的な近似)
-    ! f は 2 * sin(pi * cutoff / sample_rate) に相当
-    f = cutoff 
-    q = 1.0d0 / q_res
-    
-    ! フィルタ計算（1サンプル分）
-    high = input - low - (q * band)
-        band = band + (f * high)
-        low  = low  + (f * band)
-
-    end subroutine svf_process
-
 end module efc

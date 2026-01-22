@@ -210,7 +210,7 @@ contains
              env(i1) = data_real(set, set%env(i1))
           end do
 
-          prm_wav = sum(signal) * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push)
+          prm_wav = sum(signal)
           
           if(env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push) == 0.0) then
              set%vce%play = .false.
@@ -222,7 +222,8 @@ contains
        
        call efc_unit_pass(set%efc, set%reg, prm_wav, effected_wav)
 
-       out = effected_wav * data_real(set, set%amp) / 100
+       out = effected_wav * data_real(set, set%amp) &
+            * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push) / 100
 
        set%buffer(pos) = out
        
