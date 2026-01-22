@@ -32,4 +32,26 @@ contains
     
   end function env_out
 
+
+  subroutine svf_process(input, cutoff, q_res, low, band, high)
+        double precision, intent(in)  :: input, cutoff, q_res
+        double precision, intent(inout) :: low, band
+        double precision, intent(out) :: high
+        
+        double precision :: f, q
+
+        ! パラメータの変換 (簡易的な近似)
+        ! f は 2 * sin(pi * cutoff / sample_rate) に相当
+        f = cutoff 
+        q = 1.0d0 / q_res
+
+        ! フィルタ計算（1サンプル分）
+        high = input - low - (q * band)
+        band = band + (f * high)
+        low  = low  + (f * band)
+
+    end subroutine svf_process
+
+end module svf_module
+
 end module env

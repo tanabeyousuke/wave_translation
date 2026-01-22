@@ -28,31 +28,6 @@ contains
 
   end subroutine efc_unit_pass
 
-  subroutine svf(efc, reg, slc, in, out)
-    type(effect), intent(inout)::efc
-    real, intent(in)::reg(64)
-    integer, intent(in)::slc
-    real, intent(in)::in
-    real, intent(out)::out
-
-    real::f_p, q_p, f, q
-
-    f = data_real_a(reg, efc%p(1))
-    q = data_real_a(reg, efc%p(2))
-
-    f_p = 2.0 * sin(3.14159265 * f / 44100)
-    
-    q_p = 1.0 / q
-    
-    efc%data(1) = efc%data(3) + efc%data(1) * efc%data(5)
-    efc%data(2) = in - efc%data(3) - efc%data(2) * efc%data(5)
-    efc%data(3) = efc%data(1) * efc%data(4) + efc%data(5)
-
-
-    out = efc%data(slc)
-
-  end subroutine svf
-
   function data_real_a(reg, p)
     real, intent(in)::reg(64)
     type(param), intent(in)::p
@@ -65,4 +40,23 @@ contains
     end if
   end function data_real_a
   
+  subroutine svf_process(input, cutoff, q_res, low, band, high)
+    real, intent(in)  :: input, cutoff, q_res
+    real, intent(inout) :: low, band
+    real, intent(out) :: high
+    
+    real :: f, q
+    
+    ! パラメータの変換 (簡易的な近似)
+    ! f は 2 * sin(pi * cutoff / sample_rate) に相当
+    f = cutoff 
+    q = 1.0d0 / q_res
+    
+    ! フィルタ計算（1サンプル分）
+    high = input - low - (q * band)
+        band = band + (f * high)
+        low  = low  + (f * band)
+
+    end subroutine svf_process
+
 end module efc

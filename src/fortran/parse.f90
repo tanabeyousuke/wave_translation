@@ -286,6 +286,7 @@ contains
           case("dly")
              rgx(1) = 4
              allocate(set%efc(efc_num)%data(2 + 66150))
+             set%efc(efc_num)%data = 0
           case("bit")
              rgx(1) = 5
           case("com")

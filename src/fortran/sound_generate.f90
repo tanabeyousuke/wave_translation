@@ -195,20 +195,30 @@ contains
     end if
 
     do i = 1, leng
-       pos = set%writed + i
-       time = set%vce%time + i
+       if(set%vce%play .eqv. .true.)then
+          
+          pos = set%writed + i
+          time = set%vce%time + i
 
-       signal(1) = osc_sin(f * (time / 44100.0)) * data_real(set, set%osc_g(1)) / 100
-       signal(2) = osc_del(f * (time / 44100.0)) * data_real(set, set%osc_g(2)) / 100
-       signal(3) = osc_saw(f * (time / 44100.0)) * data_real(set, set%osc_g(3)) / 100
-       signal(4) = osc_sqr(f * (time / 44100.0)) * data_real(set, set%osc_g(4)) / 100
-       signal(5) = osc_rnd() * data_real(set, set%osc_g(5)) / 100
+          signal(1) = osc_sin(f * (time / 44100.0)) * data_real(set, set%osc_g(1)) / 100
+          signal(2) = osc_del(f * (time / 44100.0)) * data_real(set, set%osc_g(2)) / 100
+          signal(3) = osc_saw(f * (time / 44100.0)) * data_real(set, set%osc_g(3)) / 100
+          signal(4) = osc_sqr(f * (time / 44100.0)) * data_real(set, set%osc_g(4)) / 100
+          signal(5) = osc_rnd() * data_real(set, set%osc_g(5)) / 100
 
-       do i1 = 1, 4 
-          env(i1) = data_real(set, set%env(i1))
-       end do
+          do i1 = 1, 4 
+             env(i1) = data_real(set, set%env(i1))
+          end do
 
-       prm_wav = sum(signal) * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push)
+          prm_wav = sum(signal) * env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push)
+          
+          if(env_out(env(1), env(2), env(3), env(4), time, set%vce%last, set%vce%push) == 0.0) then
+             set%vce%play = .false.
+          end if
+
+       else
+          prm_wav = 0.0
+       end if
        
        call efc_unit_pass(set%efc, set%reg, prm_wav, effected_wav)
 
