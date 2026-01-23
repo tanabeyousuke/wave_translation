@@ -1,16 +1,16 @@
 module_num: !特定ユニットの数
   	    lfo 1; !lfoの個数
-  	    efc 1; !エフェクトの個数
+  	    efc 0; !エフェクトの個数
 
 setting:
   osc sin 100;
 
   env atk 200;
   env dec 8820;
-  env sus 0.5;
+  env sus 1;
   env rel 22050;
 
-  lfo saw r1 r9 r10; !波形、周波数、振幅、オフセット、出力 
+  lfo sqr 1.5 50 50 r5; !波形、周波数、振幅、オフセット、出力 
 
   efc low 3000 15 !エフェクト 入力数は種類によって異なる
   efc hig 5000 20
@@ -18,22 +18,7 @@ setting:
   amp r5; !最終的にどれぐらいの大きさで音を出すか決めるアンプ
 
 play:
-  mov r5 30;
 
-  mov r2 5.0;
-  key g 4 22040;
-  rst 22040;
-
-  mov r2 10.0;
-  key e 4 22050;
-  rst 22050;
-  
-  mov r2 15.0;
-  key c 4 22050;
-  rst 22050;
-
-  mov r2 20.0;
-  key g 3 22050;
-  rst 22050;
+  key g 4 99999;
 
 end:

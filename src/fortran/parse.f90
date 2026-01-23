@@ -21,6 +21,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   type::lfo
      integer::form !波形
      type(param)::p(4) !周波数、振幅、オフセット、出力
+     integer::count
   end type lfo
 
   type::effect
@@ -255,7 +256,7 @@ contains
 
           set%lfo(lfo_num)%form = rgx(1)
 
-          do i = 1, 3
+          do i = 1, 4
              optail = optail + 1
              call get_token(line, ophead, optail, scpos)
              operate = line(ophead:optail)

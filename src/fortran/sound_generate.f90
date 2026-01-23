@@ -195,6 +195,45 @@ contains
     end if
 
     do i = 1, leng
+       do i1 = 1, size(set%lfo)
+          set%lfo(i1)%count = set%lfo(i1)%count + 1 
+          if (set%lfo(i1)%p(4)%rorv .eqv. .true.)then
+             select case(set%lfo(i1)%form)
+             case(1)
+                set%reg(set%lfo(i1)%p(4)%reg_num) = &
+                     osc_sin(data_real(set, set%lfo(i1)%p(1)) * &
+                     (set%lfo(i1)%count / 44100.0)) * &
+                     data_real(set, set%lfo(i1)%p(2)) + &
+                     data_real(set, set%lfo(i1)%p(3))
+             case(2)
+                set%reg(set%lfo(i1)%p(4)%reg_num) = &
+                     osc_del(data_real(set, set%lfo(i1)%p(1)) * &
+                     (set%lfo(i1)%count / 44100.0)) * &
+                     data_real(set, set%lfo(i1)%p(2)) + &
+                     data_real(set, set%lfo(i1)%p(3))
+             case(3)
+                set%reg(set%lfo(i1)%p(4)%reg_num) = &
+                     osc_saw(data_real(set, set%lfo(i1)%p(1)) * &
+                     (set%lfo(i1)%count / 44100.0)) * &
+                     data_real(set, set%lfo(i1)%p(2)) + &
+                     data_real(set, set%lfo(i1)%p(3))
+             case(4)
+                set%reg(set%lfo(i1)%p(4)%reg_num) = &
+                     osc_sqr(data_real(set, set%lfo(i1)%p(1)) * &
+                     (set%lfo(i1)%count / 44100.0)) * &
+                     data_real(set, set%lfo(i1)%p(2)) + &
+                     data_real(set, set%lfo(i1)%p(3))
+
+             case(5)
+                set%reg(set%lfo(i1)%p(4)%reg_num) = &
+                     osc_rnd() * &
+                     data_real(set, set%lfo(i1)%p(2)) + &
+                     data_real(set, set%lfo(i1)%p(3))
+             end select
+                  
+          end if
+       end do
+      
        if(set%vce%play .eqv. .true.)then
           
           pos = set%writed + i

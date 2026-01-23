@@ -41,9 +41,7 @@ contains
        writer = writer - 66150
     end if
 
-    reader = mod(int(data_real_a(reg, efc%p(1))))
-    
-    
+    reader = mod(int(data_real_a(reg, efc%p(1))), 66150)
 
   end subroutine dly
 
