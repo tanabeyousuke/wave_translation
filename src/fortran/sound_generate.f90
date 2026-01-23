@@ -58,7 +58,7 @@ contains
     type(setting),intent(inout)::set
 
     character(len=80)::line
-    character(len=5)::operate
+    character(len=10)::operate
     integer::unit_num, iostat_value, scpos, endpos, ophead, optail
     integer::i, space, rgx(5)
 
@@ -173,8 +173,16 @@ contains
 
           set%vce%play = .true.
           set%vce%push = .false.
+       case("prt")
+          
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = trim(line(ophead:optail))
+
+          print *, operate
        end select
 
+       
     end do
 
   end subroutine fill_buffer

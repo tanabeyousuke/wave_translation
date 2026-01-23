@@ -1,0 +1,160 @@
+module_num:
+  lfo 0;
+  efc 2;
+
+setting:
+  osc sqr 50;
+  osc saw 50;
+
+  env atk 200;
+  env dec 0;
+  env sus 1;
+  env rel 200;
+
+  efc low 1000 1;
+  efc low 1000 1;
+
+  amp r5;
+
+  pch 0;
+
+play:
+
+  mov r5 70;
+
+  rst 441000;
+
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  prt yab18;
+
+
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  rst 6891;
+  key ais 4 6891; 
+  prt yab116;
+
+end:

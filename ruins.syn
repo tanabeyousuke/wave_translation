@@ -1,0 +1,93 @@
+module_num:
+  lfo 0;
+  efc 2;
+
+setting:
+  osc del 40;
+  osc sin 30;
+
+  env atk 200;
+  env dec 11025;
+  env sus 0;
+  env rel 200;
+
+  efc hig 2000 1;
+  efc hcl 2 20
+
+  amp r5;
+
+  pch 0;
+  
+play:
+  mov r5 50;
+
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  prt ruins8;
+
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  key g 7 27563;
+  prt ruins16;
+
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+  key g 7 13781;
+  rst 13781;
+  key g 7 13781;
+  key g 7 13781;
+
+end:

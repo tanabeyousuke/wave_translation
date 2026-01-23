@@ -1,0 +1,124 @@
+module_num: !特定ユニットの数
+  	    lfo 0; !lfoの個数
+  	    efc 2; !エフェクトの個数
+
+setting:
+  osc sqr 100;
+  osc rnd 50;
+
+  env atk 100;
+  env dec 8820;
+  env sus 0;
+  env rel 22050;
+
+  efc hig 1000 1;
+  efc scl 1 20;
+
+  amp  r5;
+
+  pch 0;
+
+play:
+
+  mov r5 90;
+
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+  rst 13781;
+  key a 1 13784;
+
+end:

@@ -1,0 +1,120 @@
+module_num: !特定ユニットの数
+  	    lfo 0; !lfoの個数
+  	    efc 1; !エフェクトの個数
+
+setting:
+  osc sin 100;
+
+  env atk 100;
+  env dec 500;
+  env sus 0;
+  env rel 22050;
+
+  efc hcl 1 10;
+
+  amp  r5;
+
+  pch 0;
+
+play:
+
+  mov r5 50;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+  
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+
+  key a 1 20672;
+  key a 1 13781;
+  key a 1 20672;
+end:

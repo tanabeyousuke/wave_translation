@@ -1,0 +1,77 @@
+module_num:
+  lfo 0;
+  efc 2;
+
+setting:
+  osc del 40;
+  osc sin 30;
+
+  env atk 200;
+  env dec 11025;
+  env sus 0;
+  env rel 200;
+
+  efc hig 2000 1;
+
+  amp r5;
+
+  pch 0;
+  
+play:
+  mov r5 100;
+
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  prt kris8;
+
+
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  prt kris16;
+
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+  rst 27563;
+  key h 6 27563;
+
+end:
