@@ -16,12 +16,13 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      integer::last
      integer::pn
      integer::oct
+     real::phase
   end type voice
   
   type::lfo
      integer::form !波形
      type(param)::p(4) !周波数、振幅、オフセット、出力
-     integer::count
+     real::phase
   end type lfo
 
   type::effect
@@ -41,7 +42,9 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      type(param)::amp
 
      type(voice)::vce
-
+     
+     type(param)::pitch
+     
      integer::unit_num 
      real::buffer(4410)
      real::reg(64)
@@ -105,6 +108,7 @@ contains
     integer iostat_value, scpos, setpos, ophead, optail
     integer i, ro, rgx(10)
     logical lrgx(5)
+
 
     do
        read(unit_num, '(A:)', iostat=iostat_value) line
@@ -250,8 +254,6 @@ contains
              rgx(1) = 3
           case("sqr")
              rgx(1) = 4
-          case("rnd")
-             rgx(1) = 5
           end select
 
           set%lfo(lfo_num)%form = rgx(1)
@@ -274,11 +276,11 @@ contains
           select case(operate)
           case("low") 
              rgx(1) = 1
-             allocate(set%efc(efc_num)%data(3))
+             allocate(set%efc(efc_num)%data(4))
              set%efc(efc_num)%data = 0
           case("hig")
              rgx(1) = 2
-             allocate(set%efc(efc_num)%data(3))
+             allocate(set%efc(efc_num)%data(4))
              set%efc(efc_num)%data = 0
           case("bnd")
              rgx(1) = 3
@@ -290,14 +292,10 @@ contains
              set%efc(efc_num)%data = 0
           case("bit")
              rgx(1) = 5
-          case("com")
-             rgx(1) = 6
           case("hcl")
              rgx(1) = 7
           case("scl")
              rgx(1) = 8
-          case("fbc")
-             rgx(1) = 9
           end select
 
           set%efc(efc_num)%type = rgx(1)
@@ -319,6 +317,12 @@ contains
           operate = line(ophead:optail)
 
           call num_reg(operate, set%amp) 
+       case("pch")
+          optail = optail + 1
+          call get_token(line, ophead, optail, scpos)
+          operate = line(ophead:optail)
+
+          call num_reg(operate, set%pitch) 
        end select
     end do
 

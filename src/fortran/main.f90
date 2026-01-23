@@ -19,7 +19,6 @@ program main
 
   call setup_music("tamabashi.msc", music_data)
 
-
   call sound_start(mt)
   call play(mt, music_data)
   call sound_stop(mt)
