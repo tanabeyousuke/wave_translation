@@ -279,16 +279,4 @@ contains
 
   end subroutine write_buffer
 
-  function data_real(set, p)
-    type(setting),intent(in)::set
-    type(param),intent(in)::p
-    real::data_real
-    
-    if(p%rorv .eqv. .true.)then
-       data_real = set%reg(p%reg_num)
-    else
-       data_real = p%value
-    end if
-  end function data_real
-
 end module sound_generate

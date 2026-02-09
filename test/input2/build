@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+gfortran parse.f90 main.f90
+
+rm parse.mod 
