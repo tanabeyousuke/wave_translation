@@ -16,12 +16,13 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      integer::last
      integer::pn
      integer::oct
-     real::phase
+     real,allocatable::phase(:)
   end type voice
   
   type::lowfrequency
      integer::form !波形
      type(param)::p(4) !周波数、振幅、オフセット、出力
+     real::phase
   end type lowfrequency
 
   type::effect
@@ -36,7 +37,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
   end type oscillator
 
   type::envelope
-     type(param)::p(7)!オフセット、最大値、atk, dec, sus, rel, 出力
+     type(param)::p(7)!オフセット、倍率、atk, dec, sus, rel, 出力
   end type envelope
 
   type::setting
@@ -125,13 +126,13 @@ contains
     allocate(set%env(0))
     allocate(set%lfo(0))
     allocate(set%efc(0))
-
+    
     do
        read(unit_num, '(A:)', iostat=iostat_value)line
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
        end do
-
+       
        playpos = index(line, "play:")
        if(playpos /= 0) exit
 
@@ -277,6 +278,7 @@ contains
     set%rest = 0
     set%ready = .false.
     set%slc = .false.
+    allocate(set%vce%phase(size(set%osc)))
 
   end subroutine synth_setting
 
@@ -332,7 +334,7 @@ contains
     do
        read(unit_num, '(A:)', iostat=iostat_value) line
        if(iostat_value /= 0)then
-          print *, "That's likely the end of it."
+          print *, "That's likely the end of music file."
           exit
        end if
 
@@ -353,12 +355,12 @@ contains
   function data_real(reg, p)
     real, intent(in)::reg(64)
     type(param), intent(in)::p
-    real::data_real_a
+    real::data_real
 
     if(p%rorv .eqv. .true.)then
-       data_real_a = reg(p%reg_num)
+       data_real = reg(p%reg_num)
     else
-       data_real_a = p%value
+       data_real = p%value
     end if
   end function data_real
 end module parse

@@ -40,7 +40,7 @@ contains
        else
           call music_generate(msc)
        end if
-
+       print *, "a"
     end do
   end subroutine play
 
@@ -80,6 +80,7 @@ contains
 
        read(unit_num, '(A:)', iostat=iostat_value) line
        endpos = index(line, "end:")
+       print *, line
        if(iostat_value /= 0 .or. endpos /= 0)then
           set%slc = .true.
           exit
@@ -181,8 +182,6 @@ contains
 
           print *, operate
        end select
-
-       
     end do
 
   end subroutine fill_buffer
@@ -191,8 +190,8 @@ contains
     type(setting),intent(inout)::set
 
     integer::i, i1, leng, space, time, pos, n
-    real::f, signal(5), prm_wav, effected_wav, out, env(4)
-
+    real::f, prm_wav, osc_wav, effected_wav, out, env(4)
+    
     n = (set%vce%pn) + (set%vce%oct - 4) * 12 
     f = 440.0 * (2**(n/12.0))
  
@@ -205,63 +204,71 @@ contains
     end if
 
     do i = 1, leng
+       pos = set%writed + i
+       time = set%vce%time + i
+       
        do i1 = 1, size(set%lfo)
           if (set%lfo(i1)%p(4)%rorv .eqv. .true.)then
              select case(set%lfo(i1)%form)
              case(1)
                 set%reg(set%lfo(i1)%p(4)%reg_num) = &
                      osc_sin(set%lfo(i1)%phase) * &
-                     data_real(set, set%lfo(i1)%p(2)) + &
-                     data_real(set, set%lfo(i1)%p(3))
+                     data_real(set%reg, set%lfo(i1)%p(2)) + &
+                     data_real(set%reg, set%lfo(i1)%p(3))
              case(2)
                 set%reg(set%lfo(i1)%p(4)%reg_num) = &
                      osc_del(set%lfo(i1)%phase) * &
-                     data_real(set, set%lfo(i1)%p(2)) + &
-                     data_real(set, set%lfo(i1)%p(3))
+                     data_real(set%reg, set%lfo(i1)%p(2)) + &
+                     data_real(set%reg, set%lfo(i1)%p(3))
              case(3)
                 set%reg(set%lfo(i1)%p(4)%reg_num) = &
                      osc_saw(set%lfo(i1)%phase) * &
-                     data_real(set, set%lfo(i1)%p(2)) + &
-                     data_real(set, set%lfo(i1)%p(3))
+                     data_real(set%reg, set%lfo(i1)%p(2)) + &
+                     data_real(set%reg, set%lfo(i1)%p(3))
              case(4)
                 set%reg(set%lfo(i1)%p(4)%reg_num) = &
                      osc_sqr(set%lfo(i1)%phase) * &
-                     data_real(set, set%lfo(i1)%p(2)) + &
-                     data_real(set, set%lfo(i1)%p(3))
+                     data_real(set%reg, set%lfo(i1)%p(2)) + &
+                     data_real(set%reg, set%lfo(i1)%p(3))
              end select
           end if
           set%lfo(i1)%phase = set%lfo(i1)%phase + &
-               mod(data_real(set, set%lfo(i1)%p(1)) / 44100.0, 1.0)   
+               mod(data_real(set%reg, set%lfo(i1)%p(1)) / 44100.0, 1.0)   
        end do
-      
-       pos = set%writed + i
-       time = set%vce%time + i
-
-       signal(1) = osc_sin(set%vce%phase) * data_real(set, set%osc_g(1)) / 100
-       signal(2) = osc_del(set%vce%phase) * data_real(set, set%osc_g(2)) / 100
-       signal(3) = osc_saw(set%vce%phase) * data_real(set, set%osc_g(3)) / 100
-       signal(4) = osc_sqr(set%vce%phase) * data_real(set, set%osc_g(4)) / 100
-       signal(5) = osc_rnd() * data_real(set, set%osc_g(5)) / 100
-
-       set%vce%phase = set%vce%phase + ((f + data_real(set, set%pitch))&
-            / 44100.0)
-       if(set%vce%phase > 1.0)then
-          set%vce%phase = set%vce%phase - 1
-       end if
-
-       do i1 = 1, 4 
-          env(i1) = data_real(set, set%env(i1))
-       end do
-
-       prm_wav = sum(signal) * &
-            env_out(env(1), env(2), env(3), env(4), &
-            time, set%vce%last, set%vce%push)
-          
        
-       call efc_unit_pass(set%efc, set%reg, prm_wav, effected_wav)
+       do i1 = 1, size(set%env)
+          if (set%env(i1)%p(7)%rorv .eqv. .true.)then
+             set%reg(set%env(i1)%p(7)%reg_num) = &
+                  env_out(data_real(set%reg, set%env(i1)%p(3)), &
+                  data_real(set%reg, set%env(i1)%p(4)), &
+                  data_real(set%reg, set%env(i1)%p(5)), &
+                  data_real(set%reg, set%env(i1)%p(6)), time, set%vce%last, set%vce%push) &
+                  * data_real(set%reg, set%env(i1)%p(2)) + data_real(set%reg, set%env(i1)%p(1)) 
+          end if
+       end do
 
-       out = effected_wav * data_real(set, set%amp) / 100
+       osc_wav = 0
+       do i1 = 1, size(set%osc)
+          select case(set%osc(i1)%type)
+          case(1)
+             osc_wav = osc_wav + osc_sin(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
+          case(2)
+             osc_wav = osc_wav + osc_del(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
+          case(3)
+             osc_wav = osc_wav + osc_saw(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
+          case(4)
+             osc_wav = osc_wav + osc_sqr(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
+          case(5)
+             osc_wav = osc_wav + osc_rnd() * data_real(set%reg, set%osc(i1)%p(2))
+          end select
+          set%vce%phase(i1) = set%vce%phase(i1) + &
+               mod((data_real(set%reg, set%pitch) + f) * &
+               data_real(set%reg, set%osc(i1)%p(1)) / 44100.0, 1.0)   
+       end do
 
+       call efc_unit_pass(set%efc, set%reg, osc_wav, effected_wav)
+
+       out = effected_wav * data_real(set%reg, set%amp)
        set%buffer(pos) = out
        
     end do

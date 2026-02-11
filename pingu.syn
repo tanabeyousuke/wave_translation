@@ -1,16 +1,9 @@
-module_num:
-  lfo 0;
-  efc 2;
-
 setting:
-  osc del 40;
-  osc sin 30;
-  osc sqr 30;
-
-  env atk 200;
-  env dec 0;
-  env sus 1;
-  env rel 200;
+  osc del 1 40;
+  osc sin 1 30;
+  osc sqr 0.5 30;
+  
+  env 0, 1, 200, 0, 1, 200, r5;
 
   efc low 1000 1;
   efc low 1000 1;

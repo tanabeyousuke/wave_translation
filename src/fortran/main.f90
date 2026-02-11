@@ -25,5 +25,3 @@ program main
 
   call system_cleanup(mt)
 end program main
-
- 

@@ -2,7 +2,8 @@ setting:
   osc sin 1 30; !オシレータの音量
   osc del 1 30;
 
-  env r1 r2 r3 r4 r5 r6 r7;
+  env r1 r2 r3 r4 r5 r6 r7;!オフセット、倍率、atk, dec, sus, rel, 出力
+
 
   lfo sqr r8 r9 r10; !波形、周波数、振幅、オフセット、出力 
 

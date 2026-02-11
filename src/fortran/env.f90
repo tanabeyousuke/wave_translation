@@ -1,13 +1,11 @@
 module env
-  use parse
   implicit none
 
 contains
-  function env_out(env, time, last, push, reg)
-    type(envelope),intent(in)::env
+    function env_out(atk, dec, sus, rel, time, last, push)
+    real,intent(in)::atk,dec,sus,rel
     integer,intent(in)::time,last
     logical,intent(in)::push
-    real,intent(in)::reg(64)
 
     real::env_out
 
@@ -16,21 +14,22 @@ contains
 
     if(push .eqv. .false.) then
        count = time - last
-       m = 0 - (data_real(env%p(5)) / data_real(env%p(6)))
-       x = m * count + data_real(env%p(5))
+       m = 0 - (sus / rel)
+       x = m * count + sus
        if (x < 0) x = 0
-       env_out = x + data_real(env%p(1))
-    else if(time < data_real(env%p(3))) then
+       env_out = x
+    else if(time < atk) then
        count = time
-       m = data_real(env%p(2)) / data_real(env%p(3)) 
+       m = 1 / atk
        env_out = m * count
-    else if(time - data_real(env%p(3)) < data_real(env%p(4))) then
-       count = time - data_real(env%p(3))
-       m = (data_real(env%p(5)) - 1.0) / data_real(env%p(4))
-       env_out = m * count + data_real(env%p(2))
+    else if(time - atk < dec) then
+       count = time - atk
+       m = (sus - 1.0) / dec
+       env_out = m * count + 1
     else
-       env_out = data_real(env%p(5))
+       env_out = sus
     end if
-
+    
   end function env_out
+
 end module env
