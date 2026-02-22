@@ -59,11 +59,19 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      integer::rest
      logical::ready
      logical::slc
-
+     character(len=10), allocatable::label(:)
   end type setting
+  
+  type::mnemonic
+     integer::oprt
+     integer::oprd_i(3)
+     real::oprd_r(3)
+     character(len=10)::label
+  end type mnemonic
 
   type music
      type(setting), allocatable::synth(:)
+     type(mnemonic), allocatable::all_mnm(:)
   end type music
 
 contains
@@ -281,6 +289,12 @@ contains
     allocate(set%vce%phase(size(set%osc)))
 
   end subroutine synth_setting
+
+  subroutine assemble(m)
+    
+
+
+  end subroutine assemble
 
   subroutine execute(filename, unit_num)
     character(*),intent(in)::filename
