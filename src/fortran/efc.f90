@@ -15,6 +15,7 @@ contains
     real::shield
 
     shield = in
+
     do i = 1, size(efc)
        select case(efc(i)%type)
        case(1)

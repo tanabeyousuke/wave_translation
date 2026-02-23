@@ -1,7 +1,7 @@
 setting:
-  osc del 1 40;
-  osc sin 1 30;
-  osc sqr 0.5 30;
+  osc del 1 0.4;
+  osc sin 1 0.3;
+  osc sqr 0.5 0.3;
   
   env 0, 1, 200, 0, 1, 200, r5;
 
@@ -10,51 +10,36 @@ setting:
 
   amp r5;
 
-  pch 0;
+  pch 1;
 
 play:
-  mov r5 100;
+
+  mov r11 8;
+
+a:
+  mov r10 3;
+  
+bdurf:
+  key g 2 20672;
+  key ais 2 13781;
+  key a 2 6891;
+  key ais 2 6891;
+  key f 2 6891;
+  rst 6891;
+  key g 2 6891;
+  rst 6891;
+  key d 3 13781;
+  key c 3 6891;
+  key ais 2 6891;
+  key a 2 6891;
+
+  sub r10 1;
+  joz r10 bdurf;
 
   key g 2 20672;
-  key ais 2 13781;
+  key b 2 13781;
   key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key ais 2 6891;
-  key a 2 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key ais 2 6891;
-  key a 2 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key ais 2 6891;
-  key a 2 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
+  key b 2 6891;
   key f 2 6891;
   rst 6891;
   key g 2 6891;
@@ -63,109 +48,8 @@ play:
   key c 3 6891;
   key d 3 6891;
   key f 3 6891;
-  prt pin8;
-
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key ais 2 6891;
-  key a 2 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key ais 2 6891;
-  key a 2 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key ais 2 6891;
-  key a 2 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key d 3 6891;
-  key f 3 6891;
-  prt pin16;
-
-  mov r5 50;
-
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key d 3 6891;
-  key f 3 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key d 3 6891;
-  key f 3 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key d 3 6891;
-  key f 3 6891;
-  key g 2 20672;
-  key ais 2 13781;
-  key a 2 6891;
-  key ais 2 6891;
-  key f 2 6891;
-  rst 6891;
-  key g 2 6891;
-  rst 6891;
-  key d 3 13781;
-  key c 3 6891;
-  key d 3 6891;
-  key f 3 6891;
-
+  
+  sub r11 1;
+  joz r10 a;
 
 end:
-  

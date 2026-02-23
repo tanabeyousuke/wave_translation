@@ -55,7 +55,7 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      integer::unit_num 
      real::buffer(4410)
      real::reg(64)
-     integer::writed, rest, start, last
+     integer::writed, rest, start, last, pc
      logical::ready, slc
      character(len=10), allocatable::label(:)
      integer, allocatable::label_addr(:)
@@ -78,8 +78,11 @@ contains
     character(*), intent(in)::op
     type(param),intent(inout)::p
 
-    if(op(1:1) == "r") then
-       read(op(2:4), *) p%reg_num
+    integer::rp
+
+    rp = index(op, "r")
+    if(rp /= 0) then
+       read(op(rp+1:), *) p%reg_num
        p%rorv = .true.
     else
        read(op, *) p%value
@@ -102,7 +105,7 @@ contains
     end do
 
     do i = ophead + 1, scpos
-       if(line(i:i) == ' ' .or. line(i:i) == ';') then
+       if(line(i:i) == ' ' .or. i == scpos)then
           optail = i - 1
 
           exit
@@ -126,6 +129,8 @@ contains
     type(envelope)::env
     type(lowfrequency)::lfo !ゲインにつなぐLFOのパラメータ 周波数、振幅、オフセット、出力
     type(effect)::efc !エフェクト 
+
+    set%unit_num = unit_num
 
     ophead = 0
 
@@ -232,12 +237,20 @@ contains
           select case(operate)
           case("low")
              rgx(1) = 1
+             allocate(efc%data(4))
+             efc%data = 0
           case("hig")
              rgx(1) = 2
+             allocate(efc%data(4))
+             efc%data = 0
           case("bnd")
              rgx(1) = 3
+             allocate(efc%data(3))
+             efc%data = 0
           case("dly")
              rgx(1) = 4
+             allocate(efc%data(2 + 66150))
+             efc%data = 0
           case("bit")
              rgx(1) = 5
           case("com")
@@ -263,7 +276,10 @@ contains
              end if
           end do
           set%efc = [set%efc, efc]
-
+          if(allocated(efc%data))then
+             deallocate(efc%data)
+          end if
+          
        case("amp")
           optail = optail + 1
           call get_token(line, ophead, optail, scpos)
@@ -306,10 +322,11 @@ contains
        allocate(m%synth(i)%label_addr(0))
        
        m%synth(i)%start = nm
+       m%synth(i)%pc = nm
        do
           read(nu, '(A:)', iostat=ni) line
           if(ni /= 0) then
-             print *, "error: assemble, file read", nm
+             print *, "error: assemble, file read", nm, "at", nu
              exit
           end if
           
@@ -328,11 +345,12 @@ contains
              sp = index(line, ':')
              if (sp /= 0) then
                 call get_token(line, oh, ot, sp)
-                m%synth(i)%label = [m%synth(i)%label, line(oh:ot)]
+                m%synth(i)%label = [character(len=10) :: m%synth(i)%label, line(oh:ot)]
                 m%synth(i)%label_addr = [m%synth(i)%label_addr, nm]
              end if
              cycle
           end if
+          
 
           call get_token(line, oh, ot, sp)
           operate = line(oh:ot)
@@ -348,7 +366,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
              
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -358,7 +376,7 @@ contains
                 read(operate, *) mnm%oprd_r(1)
                 mnm%oprt = 1
              else
-                read(operate(rp:), *) mnm%oprd_i(2)
+                read(operate(rp+1:), *) mnm%oprd_i(2)
                 mnm%oprt = 2
              end if
           case("add")
@@ -366,7 +384,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
 
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -376,7 +394,7 @@ contains
                 read(operate, *) mnm%oprd_r(1)
                 mnm%oprt = 3
              else
-                read(operate(rp:), *) mnm%oprd_i(2)
+                read(operate(rp+1:), *) mnm%oprd_i(2)
                 mnm%oprt = 4
              end if
           case("sub")
@@ -384,7 +402,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
 
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -394,7 +412,7 @@ contains
                 read(operate, *) mnm%oprd_r(1)
                 mnm%oprt = 5
              else
-                read(operate(rp:), *) mnm%oprd_i(2)
+                read(operate(rp+1:), *) mnm%oprd_i(2)
                 mnm%oprt = 6
              end if
           case("mul")
@@ -402,7 +420,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
 
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -412,7 +430,7 @@ contains
                 read(operate, *) mnm%oprd_r(1)
                 mnm%oprt = 7
              else
-                read(operate(rp:), *) mnm%oprd_i(2)
+                read(operate(rp+1:), *) mnm%oprd_i(2)
                 mnm%oprt = 8
              end if
            case("div")
@@ -420,7 +438,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
 
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -430,7 +448,7 @@ contains
                 read(operate, *) mnm%oprd_r(1)
                 mnm%oprt = 9
              else
-                read(operate(rp:), *) mnm%oprd_i(2)
+                read(operate(rp+1:), *) mnm%oprd_i(2)
                 mnm%oprt = 10
              end if
 
@@ -445,7 +463,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
              
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -457,7 +475,7 @@ contains
              call get_token(line, oh, ot, sp)
              operate = line(oh:ot)
              rp = index(operate, "r")
-             read(operate(rp:), *) mnm%oprd_i(1)
+             read(operate(rp+1:), *) mnm%oprd_i(1)
              
              ot = ot + 1
              call get_token(line, oh, ot, sp)
@@ -540,8 +558,6 @@ contains
              mnm%oprt = 16
           end select
 
-          print *, mnm%oprt
-
           m%all_mnm(nm) = mnm
           if(nm == size(m%all_mnm))then
              m%all_mnm = [m%all_mnm, m%all_mnm]
@@ -559,8 +575,8 @@ contains
                 end if
              end do
              if (m%all_mnm(i1)%oprd_i(3) == 0) then
-                print *, "assemble error"
-                print *, m%all_mnm(i1), "is not existing"
+                print *, "assemble error at", i1
+                print *, m%all_mnm(i1)%label, "is not existing"
                 exit
              end if
           end if
@@ -602,11 +618,17 @@ contains
           print *, "error: ", line, "open_failed"
           
        end if
-
+       
        call synth_setting(synth_unit_num, synth)
        
        m%synth = [m%synth, synth]
        i = i + 1
+
+       deallocate(synth%osc)
+       deallocate(synth%env)
+       deallocate(synth%lfo)
+       deallocate(synth%efc)
+       deallocate(synth%vce%phase)
     end do
 
     call assemble(m)

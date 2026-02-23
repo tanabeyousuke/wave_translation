@@ -5,6 +5,6 @@ end section basicdata
 
 
 section assemble
-f90:src/fortran:gfortran -c <src> -o <obj> -lm -O3 -march=native
+f90:src/fortran:gfortran -c <src> -o <obj> -lm -g -fbacktrace -fcheck=all 
 c:src/c:gcc -c <src> -lm -O3 -march=native
 end section assemble
