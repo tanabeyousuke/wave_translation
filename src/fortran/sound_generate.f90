@@ -80,7 +80,6 @@ contains
 
        read(unit_num, '(A:)', iostat=iostat_value) line
        endpos = index(line, "end:")
-       print *, line
        if(iostat_value /= 0 .or. endpos /= 0)then
           set%slc = .true.
           exit

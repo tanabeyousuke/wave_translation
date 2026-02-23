@@ -1,0 +1,45 @@
+setting:
+  osc del 1 40;
+  osc sin 1 30;
+  osc sqr 0.5 30;
+  
+  env 0, 1, 200, 0, 1, 200, r5;
+
+  efc low 1000 1;
+  efc low 1000 1;
+
+  amp r5;
+
+  pch 0;
+
+play:
+
+  mov r5 0.3;
+  mov r5 r2;
+  
+  add r5 0.3;
+  add r5 r2;
+
+  sub r5 0.3;
+  sub r5 r2;
+  
+  mul r5 0.3;
+  mul r5 r2;
+
+  div r5 0.3;
+  div r5 r2;
+  
+label:
+
+  jmp label
+
+  joz r5 label
+  juz r5 label
+
+  key a 5 44100
+
+  rst 44100
+
+  prt test
+
+end:

@@ -55,11 +55,10 @@ module parse !パーサです。シンセサイザの設定や演奏の実行な
      integer::unit_num 
      real::buffer(4410)
      real::reg(64)
-     integer::writed
-     integer::rest
-     logical::ready
-     logical::slc
+     integer::writed, rest, start, last
+     logical::ready, slc
      character(len=10), allocatable::label(:)
+     integer, allocatable::label_addr(:)
   end type setting
   
   type::mnemonic
@@ -291,41 +290,286 @@ contains
   end subroutine synth_setting
 
   subroutine assemble(m)
-    
+    type(music),intent(inout)::m
 
+    integer::nu, ni, sp, ep, rp, oh, ot, i, i1, i2, rgx(5), nm
+    character(len=80)::line
+    character(len=10)::operate
+    type(mnemonic)::mnm
 
-  end subroutine assemble
+    nm = 1
+    allocate(m%all_mnm(1))
 
-  subroutine execute(filename, unit_num)
-    character(*),intent(in)::filename
-    integer unit_num
+    do i = 1, size(m%synth)
+       nu = m%synth(i)%unit_num
+       allocate(m%synth(i)%label(0))
+       allocate(m%synth(i)%label_addr(0))
+       
+       m%synth(i)%start = nm
+       do
+          read(nu, '(A:)', iostat=ni) line
+          if(ni /= 0) then
+             print *, "error: assemble, file read", nm
+             exit
+          end if
+          
+          ep = index(line, "end:")
+          if(ep /= 0) then
+             exit
+          end if
 
-    character(len=80) line, mnemonic
-    integer  iostat_value, scpos, modpos
-    type(setting) set
+          do i1 = 1, len(line)
+             if(line(i:i) == char(9)) line(i:i) = ' '
+          end do
 
-    open(unit=unit_num, file=filename, status='OLD', iostat=iostat_value)
-    if(iostat_value /= 0)then
-       print *, "error"
-       stop
-    end if
+          ot = 1
+          sp = index(line, ';')
+          if(sp == 0) then
+             sp = index(line, ':')
+             if (sp /= 0) then
+                call get_token(line, oh, ot, sp)
+                m%synth(i)%label = [m%synth(i)%label, line(oh:ot)]
+                m%synth(i)%label_addr = [m%synth(i)%label_addr, nm]
+             end if
+             cycle
+          end if
 
-    do
-       read(unit_num, '(A:)', iostat=iostat_value) line
+          call get_token(line, oh, ot, sp)
+          operate = line(oh:ot)
 
-       if(iostat_value /= 0) exit
-       ! print *, line
+          mnm%oprt = 0
+          mnm%oprd_i = 0
+          mnm%oprd_r = 0
+          mnm%label = ""
 
-       modpos = index(line, "module_num:")
-       if(modpos /= 0) exit
+          select case(operate)
+          case("mov")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+             
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             if (rp == 0) then
+                read(operate, *) mnm%oprd_r(1)
+                mnm%oprt = 1
+             else
+                read(operate(rp:), *) mnm%oprd_i(2)
+                mnm%oprt = 2
+             end if
+          case("add")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             if (rp == 0) then
+                read(operate, *) mnm%oprd_r(1)
+                mnm%oprt = 3
+             else
+                read(operate(rp:), *) mnm%oprd_i(2)
+                mnm%oprt = 4
+             end if
+          case("sub")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             if (rp == 0) then
+                read(operate, *) mnm%oprd_r(1)
+                mnm%oprt = 5
+             else
+                read(operate(rp:), *) mnm%oprd_i(2)
+                mnm%oprt = 6
+             end if
+          case("mul")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             if (rp == 0) then
+                read(operate, *) mnm%oprd_r(1)
+                mnm%oprt = 7
+             else
+                read(operate(rp:), *) mnm%oprd_i(2)
+                mnm%oprt = 8
+             end if
+           case("div")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             if (rp == 0) then
+                read(operate, *) mnm%oprd_r(1)
+                mnm%oprt = 9
+             else
+                read(operate(rp:), *) mnm%oprd_i(2)
+                mnm%oprt = 10
+             end if
+
+          case("jmp")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%label
+             mnm%oprt = 11
+          case("joz") !jump over zero
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+             
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%label
+             mnm%oprt = 12
+          case("juz") !jump under zero
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             rp = index(operate, "r")
+             read(operate(rp:), *) mnm%oprd_i(1)
+             
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%label
+             mnm%oprt = 13
+
+          case("key")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+
+             select case(operate)
+             case("ces")
+                rgx(2) = -10
+             case("c")
+                rgx(2) = -9
+             case("cis")
+                rgx(2) = -8
+             case("des")
+                rgx(2) = -8
+             case("d")
+                rgx(2) = -7
+             case("dis")
+                rgx(2) = -6
+             case("es")
+                rgx(2) = -6
+             case("e")
+                rgx(2) = -5
+             case("f")
+                rgx(2) = -4
+             case("fis")
+                rgx(2) = -3
+             case("ges")
+                rgx(2) = -3
+             case("g")
+                rgx(2) = -2
+             case("gis")
+                rgx(2) = -1
+             case("as")
+                rgx(2) = -1
+             case("a")
+                rgx(2) = 0
+             case("ais")
+                rgx(2) = 1
+             case("b")
+                rgx(2) = 1
+             case("h")
+                rgx(2) = 2
+             case("his")
+                rgx(2) = 3
+             end select
+             
+             mnm%oprd_i(1) = rgx(2)
+
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%oprd_i(2)
+             
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%oprd_i(3)
+             
+             mnm%oprt = 14
+          case("rst")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%oprd_i(1)
+
+             mnm%oprt = 15
+             
+          case("prt")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%label
+             mnm%oprt = 16
+          end select
+
+          print *, mnm%oprt
+
+          m%all_mnm(nm) = mnm
+          if(nm == size(m%all_mnm))then
+             m%all_mnm = [m%all_mnm, m%all_mnm]
+          end if
+          nm = nm + 1
+       end do
+
+       m%synth(i)%last = nm - 1
+       
+       do i1 = m%synth(i)%start, m%synth(i)%last
+          if(m%all_mnm(i1)%oprt >= 11 .and. m%all_mnm(i1)%oprt <= 13) then
+             do i2 = 1, size(m%synth(i)%label)
+                if(m%all_mnm(i1)%label == m%synth(i)%label(i2))then
+                   m%all_mnm(i1)%oprd_i(3) = m%synth(i)%label_addr(i2)
+                end if
+             end do
+             if (m%all_mnm(i1)%oprd_i(3) == 0) then
+                print *, "assemble error"
+                print *, m%all_mnm(i1), "is not existing"
+                exit
+             end if
+          end if
+       end do
 
     end do
 
-    call synth_setting(unit_num, set)
 
-    close(unit_num)
-
-  end subroutine execute
+  end subroutine assemble
   
   subroutine setup_music(filename, m)
     character(*),intent(in)::filename
@@ -364,6 +608,8 @@ contains
        m%synth = [m%synth, synth]
        i = i + 1
     end do
+
+    call assemble(m)
   end subroutine setup_music
 
   function data_real(reg, p)
