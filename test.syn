@@ -1,0 +1,16 @@
+setting:
+  osc sqr 1 1;
+  
+  env 0 r2 0 0 1 200 r5;
+
+  amp r5;
+
+  pch 1;
+
+play:
+
+  mov r2 1;
+
+  key a 3 10000;
+
+end:

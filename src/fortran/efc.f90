@@ -178,7 +178,7 @@ contains
 
     amped = inout * data_real_a(reg, efc%p(2))
 
-    inout = (2.0/3.14159265) * atan(inout)
+    inout = tanh(inout)
 
   end subroutine scl
  

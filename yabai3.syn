@@ -1,29 +1,24 @@
-module_num:
-  lfo 0;
-  efc 2;
-
 setting:
-  osc sqr 50;
-  osc saw 50;
+  osc sqr 1 0.5;
+  osc saw 1 0.5;
 
-  env atk 200;
-  env dec 0;
-  env sus 1;
-  env rel 200;
+  env 0 r2 200 0 1 200 r5;
 
   efc low 1000 1;
   efc low 1000 1;
 
   amp r5;
 
-  pch 0;
+  pch 1;
 
 play:
 
-  mov r5 70;
+  mov r2 0.7;
+  mov r10 8;
 
   rst 441000;
 
+start:
   rst 6891;
   key d 4 6891; 
   rst 6891;
@@ -40,121 +35,8 @@ play:
   key d 4 6891; 
   rst 6891;
   key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  prt yab38;
 
-
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  rst 6891;
-  key d 4 6891; 
-  prt yab316;
+  sub r10 1;
+  joz r10 start;
 
 end:

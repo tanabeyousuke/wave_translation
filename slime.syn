@@ -1,24 +1,20 @@
-module_num: !特定ユニットの数
-  	    lfo 0; !lfoの個数
-  	    efc 1; !エフェクトの個数
-
 setting:
-  osc sin 100;
+  osc sqr 1 1.8;
 
-  env atk 100;
-  env dec 500;
-  env sus 0;
-  env rel 22050;
+  env 0 r2 100 500 0 22050 r5;
 
   efc hcl 1 10;
 
   amp  r5;
 
-  pch 0;
+  pch 1;
 
 play:
 
-  mov r5 50;
+  mov r2 0.7;
+  mov r10 6;
+
+intro:
 
   key a 1 20672;
   key a 1 13781;
@@ -36,85 +32,7 @@ play:
   key a 1 13781;
   key a 1 20672;
 
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
+  sub r10 1;
+  joz r10 intro;
 
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-  
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
-
-  key a 1 20672;
-  key a 1 13781;
-  key a 1 20672;
 end:

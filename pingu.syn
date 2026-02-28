@@ -1,9 +1,9 @@
 setting:
-  osc del 1 0.4;
-  osc sin 1 0.3;
-  osc sqr 0.5 0.3;
+  osc sqr 1 0.15;
+  osc saw 1 0.15;
+  osc sqr 0.5 0.15;
   
-  env 0, 1, 200, 0, 1, 200, r5;
+  env 0 r2 200 0 1 200 r5;
 
   efc low 1000 1;
   efc low 1000 1;
@@ -14,16 +14,18 @@ setting:
 
 play:
 
-  mov r11 8;
+  mov r2 1;
+  mov r11 3;
 
 a:
   mov r10 3;
   
 bdurf:
-  key g 2 20672;
+  key g 2 17227;
+  rst 3446;
   key ais 2 13781;
   key a 2 6891;
-  key ais 2 6891;
+  key b 2 6891;
   key f 2 6891;
   rst 6891;
   key g 2 6891;
@@ -36,7 +38,8 @@ bdurf:
   sub r10 1;
   joz r10 bdurf;
 
-  key g 2 20672;
+  key g 2 17227;
+  rst 3446;
   key b 2 13781;
   key a 2 6891;
   key b 2 6891;
@@ -50,6 +53,6 @@ bdurf:
   key f 3 6891;
   
   sub r11 1;
-  joz r10 a;
+  joz r11 a;
 
 end:

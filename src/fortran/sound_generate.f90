@@ -31,8 +31,11 @@ contains
     do
        input(:) = 0
        do i1 = 1, size(msc%synth)
-          input(:) = input(:) + msc%synth(i1)%buffer / size(msc%synth)
+          input(:) = input(:) + msc%synth(i1)%buffer
        end do
+
+       input = tanh(input)
+
        call sound_write(mt)
 
        if(all(msc%synth%slc))then
@@ -155,6 +158,7 @@ contains
           set%vce%oct = m%oprd_i(2)
           set%vce%count = m%oprd_i(3)
           set%vce%time = 0
+          set%vce%phase = 0
           set%vce%play = .true.
           set%vce%push = .true.
     !    case("key")
@@ -312,9 +316,9 @@ contains
           case(2)
              osc_wav = osc_wav + osc_del(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
           case(3)
-             osc_wav = osc_wav + osc_saw(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
-          case(4)
              osc_wav = osc_wav + osc_sqr(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
+          case(4)
+             osc_wav = osc_wav + osc_saw(set%vce%phase(i1)) * data_real(set%reg, set%osc(i1)%p(2))
           case(5)
              osc_wav = osc_wav + osc_rnd() * data_real(set%reg, set%osc(i1)%p(2))
           end select

@@ -79,7 +79,7 @@ contains
     type(param),intent(inout)::p
 
     integer::rp
-
+    
     rp = index(op, "r")
     if(rp /= 0) then
        read(op(rp+1:), *) p%reg_num
@@ -122,7 +122,7 @@ contains
 
     character(len=80) line
     character(len=5) operate
-    integer iostat_value, scpos, playpos, ophead, optail
+    integer iostat_value, scpos, playpos, ophead, optail, expos
     integer i, ro, lfo_num, efc_num, rgx(5)
     logical lrgx(5)
     type(oscillator)::osc
@@ -144,6 +144,11 @@ contains
        do i = 1, len(line)
           if (line(i:i) == char(9)) line(i:i) = ' '
        end do
+       
+       expos = index(line, "!")
+       if(expos /= 0)then
+          line = line(0:expos - 1)
+       end if
        
        playpos = index(line, "play:")
        if(playpos /= 0) exit
@@ -330,6 +335,11 @@ contains
              exit
           end if
           
+          expos = index(line, "!")
+          if(expos /= 0)then
+             line = line(0:expos - 1)
+          end if
+
           ep = index(line, "end:")
           if(ep /= 0) then
              exit
