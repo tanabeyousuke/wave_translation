@@ -242,6 +242,9 @@ contains
     !       print *, operate
     !    end select
           ! end do
+
+       case(17)
+          set%lfo(m%oprd_i(1))%phase = m%oprd_r(1)
        end select
        set%pc = set%pc + 1
     end do

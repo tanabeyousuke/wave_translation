@@ -566,6 +566,19 @@ contains
              operate = line(oh:ot)
              read(operate, *) mnm%label
              mnm%oprt = 16
+
+          case("phs")
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             operate = line(oh:ot)
+             read(operate, *) mnm%oprd_i(1)
+             
+             ot = ot + 1
+             call get_token(line, oh, ot, sp)
+             read(operate, *) mnm%oprd_r(1)
+
+             mnm%oprt = 17
+
           end select
 
           m%all_mnm(nm) = mnm
